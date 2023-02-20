@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "bank_remittance" ADD COLUMN     "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP;

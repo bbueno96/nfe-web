@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Orçamento</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter+Tight&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@700&display=swap');
+      body {
+        font-family: 'Inter Tight', sans-serif;
+        margin-left: 10px;
+        letter-spacing: 0.5px;
+        line-height: 20px;
+      }
+
+      html,
+      body {
+        height: 95%;
+      }
+
+      .itemHeader {
+        margin-left: 50px;
+        flex-direction: row;
+      }
+
+      .linha {
+        border-bottom: 1px solid black;
+        border-top: 1px solid black;
+        border-collapse: collapse;
+      }
+
+      footer {
+        display: block;
+      }
+
+      .linhaBottom {
+        border-bottom: 1px solid black;
+        border-collapse: collapse;
+      }
+
+      table {
+        width: 100%;
+      }
+
+      label {
+        font-weight: bold;
+      }
+
+      th {
+        text-align: left;
+      }
+
+      th,
+      td {
+        text-align: center;
+      }
+
+      .cabeçalho {
+        font-size: xx-small;
+
+        margin-top: 20px;
+        line-height: 10px;
+      }
+
+      .cabeçalhoOrçamento {
+        font-size: x-small;
+        font-weight: bold;
+        margin-bottom: 0;
+      }
+
+      .dadosCliente {
+        font-size: xx-small;
+        margin-bottom: 0;
+        text-align: left;
+      }
+
+      .center {
+        text-align: center;
+      }
+
+      .cabeçalhoProdutos {
+        font-size: 8px;
+        margin-bottom: 0;
+      }
+
+      p {
+        font-size: xx-small;
+      }
+
+      .footer {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+      }
+
+      .pageContent {
+        min-height: 95%;
+        position: relative;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="pageContent" class="pageContent">
+      <div>
+        <table class="cabeçalho">
+          <tr>
+            <td rowspan="5">
+              <img src="https://nfe.sistemaexpert.com.br/static/media/apoio.9605470d9f9f04773c8c.png" width="100px" />
+            </td>
+          </tr>
+
+          <tr>
+            <td><strong><%=parameters.nfeRazao%></strong></td>
+          </tr>
+          <tr>
+            <td>
+              <%= parameters.nfeLagradouro.toUpperCase()%> - <%= parameters.nfeCidade.toUpperCase()%>-SP <%=
+              parameters.nfeCep%>
+            </td>
+          </tr>
+          <tr>
+            <td>CNPJ: <%= parameters.nfeCnpj%> - IE: <%= parameters.nfeIe%> - Fone: <%= parameters.nfeFone%></td>
+          </tr>
+          <tr>
+            <td><%= parameters.email%></td>
+          </tr>
+        </table>
+        <table class="cabeçalhoOrçamento linhaBottom">
+          <tr>
+            <th></th>
+            <th></th>
+            <th style="text-align: right"><%= format(printedAt, "dd/MM/yyyy" ) %></th>
+          </tr>
+          <tr>
+            <td style="text-align: left">ORÇAMENTO No.: <%= budget.numberBudget%></td>
+            <td></td>
+            <td style="text-align: right">Data Orçamento: <%= format(budget.createdAt, 'dd/MM/yyyy')%></td>
+          </tr>
+        </table>
+
+        <table class="dadosCliente">
+          <tr>
+            <td style="text-align: left">
+              <strong>Nome: </strong>
+              <%= customer.name%>
+            </td>
+
+            <td style="text-align: left">
+              <strong>CPF/CNPJ:</strong>
+              <%=maskCpfCnpj(customer.cpfCnpj) %>
+            </td>
+            <td style="text-align: left">
+              <strong>RG/IE:</strong>
+              <%= customer.stateInscription%>
+            </td>
+          </tr>
+          <tr>
+            <td style="text-align: left" colspan="2">
+              <strong>Endereço: </strong>
+              <%=customer.address %> N <%=customer.addressNumber%>
+            </td>
+            <td style="text-align: left">
+              <strong>Complemento:</strong>
+              <%=customer.complement %>
+            </td>
+            <td style="text-align: left">
+              <strong>Bairro: </strong>
+              <%= customer.province%>
+            </td>
+          </tr>
+          <tr>
+            <td style="text-align: left" colspan="2">
+              <strong>Cidade: </strong>
+              <%= customer.cityId%> - <%= customer.state%>
+            </td>
+            <td style="text-align: left">
+              <strong>CEP:</strong>
+              <%=customer.postalCode %>
+            </td>
+            <td style="text-align: left">
+              <strong>Fone:</strong>
+              <%=maskCellPhone(customer.phone) %>
+            </td>
+          </tr>
+          <tr>
+            <td style="text-align: left" colspan="2">
+              <strong>Vendedor:</strong>
+              <%= employee.name %>
+            </td>
+            <td style="text-align: left" colspan="2">
+              <strong>Forma de Pagamento: </strong>
+              <%=PayMethod? PayMethod.description : '' %>
+            </td>
+          </tr>
+          <tr>
+            <td style="text-align: left"><strong>Comprador(a</strong>) O(A) Mesmo(a)</td>
+          </tr>
+        </table>
+        <table class="linha cabeçalhoProdutos">
+          <tr class="linha">
+            <th style="text-align: left">Código</th>
+            <th colspan="2" style="text-align: left">Descrição</th>
+            <th>Un</th>
+            <th style="text-align: justify">Qtde</th>
+            <th style="text-align: justify">Valor Unit</th>
+            <th style="text-align: justify">Valor Total</th>
+          </tr>
+          <%products.forEach(product=> { %>
+          <tr>
+            <td style="text-align: left"><%= product.Product.cod %></td>
+            <td colspan="2" style="text-align: left"><%= product.Product.description %></td>
+            <td><%= product.Product.und %></td>
+            <td style="text-align: justify"><%= maskDecimal(product.amount.toFixed(2)) %></td>
+            <td style="text-align: justify">R$ <%= maskDecimal(product.unitary.toFixed(2)) %></td>
+            <td style="text-align: justify">R$ <%= maskDecimal(product.total.toFixed(2)) %></td>
+          </tr>
+          <% }) %>
+        </table>
+        <br />
+        <br />
+        <% if(PayMethod) { %>
+        <table style="width: 40%; border-collapse: collapse">
+          <tr>
+            <th colspan="3">Parcelamento</th>
+          </tr>
+          <tr class="linha">
+            <th style="width: 5%"><strong>Parcela</strong></th>
+            <th style="width: 10%"><strong>Vencimento</strong></th>
+            <th style="width: 10%; text-align: justify"><strong>Valor</strong></th>
+          </tr>
+
+          <%installments.forEach(installment=> { %>
+          <tr>
+            <td style="text-align: right"><%=installment.numberInstallment %></td>
+            <td><%= format(installment.dueDate, "dd/MM/yyyy") %></td>
+            <td style="text-align: right">R$ <%= maskDecimal(installment.value.toFixed(2) )%></td>
+          </tr>
+          <% }) %>
+          <tr>
+            <td></td>
+            <td>Total:</td>
+            <td style="text-align: right">R$ <%=maskDecimal(budget.total.toFixed(2)) %></td>
+          </tr>
+        </table>
+        <% } %>
+      </div>
+      <div></div>
+      <div name="obs" style="width: 70%">
+        <table>
+          <tr>
+            <td colspan="5" style="text-align: left">
+              <strong>Obs: </strong>
+              <%= budget.obs%>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="footer">
+        <table class="linhaBottom" style="font-weight: bold">
+          <tr>
+            <th style="width: 70%"></th>
+            <th></th>
+            <th></th>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="width: 10%">Valor Total:</td>
+            <td style="width: 100%; text-align: right">
+              R$ <%= maskDecimal(budget.total.toFixed(2)) %>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="width: 10%">Desconto:</td>
+            <td style="width: 100%; text-align: right">R$ 0,00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="width: 10%">Total Liquido:</td>
+            <td style="width: 100%; text-align: right">
+              R$ <%= maskDecimal(budget.total.toFixed(2)) %>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </td>
+          </tr>
+          <tr>
+            <td colspan="3" style="width: 100%; text-align: left">Obs: <%= budget.obs %></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "nfe" ADD COLUMN     "vIpi" DECIMAL(10,4),
+ADD COLUMN     "vST" DECIMAL(10,4);

@@ -1,0 +1,106 @@
+import { Request, Response } from 'express'
+
+import { CreateNfeUseCase } from './CreateNfeUseCase'
+
+export class CreateNfeController {
+  constructor(private CreateNfeUseCase: CreateNfeUseCase) {
+    this.handle = this.handle.bind(this)
+  }
+
+  async handle(request: Request, response: Response) {
+    const { companyId, id: employeeId } = request.user
+    const {
+      cliente,
+      fornecedor,
+      data,
+      numeroNota,
+      tipo,
+      transpNome,
+      frete,
+      seguro,
+      outrasDespesas,
+      freteOutros,
+      desconto,
+      totalCheque,
+      totalDinheiro,
+      totalCartaoCredito,
+      totalBoleto,
+      totalOutros,
+      totalCartaoDebito,
+      totalNota,
+      totalProduto,
+      serie,
+      estorno,
+      complementar,
+      naturezaOp,
+      observacoes,
+      idCountry,
+      descCountry,
+      nDi,
+      dDi,
+      xLocDesemb,
+      uFDesemb,
+      tpViaTransp,
+      cExportador,
+      transportador,
+      products,
+      Customer,
+      paymentMethodId,
+      orderId,
+      // placaTransp,
+      // ufTransp,
+      transpCpfCnpj,
+      transpEndereco,
+      transpEstado,
+      tranpCidade,
+    } = request.body
+
+    const id = await this.CreateNfeUseCase.execute({
+      cliente,
+      fornecedor,
+      data,
+      numeroNota: parseInt(numeroNota),
+      tipo,
+      transpNome,
+      frete,
+      seguro,
+      outrasDespesas,
+      freteOutros,
+      desconto,
+      totalCheque,
+      totalDinheiro,
+      totalCartaoCredito,
+      totalBoleto,
+      totalOutros,
+      totalCartaoDebito,
+      totalNota,
+      totalProduto,
+      serie,
+      estorno,
+      complementar,
+      naturezaOp,
+      observacoes,
+      idCountry,
+      descCountry,
+      nDi,
+      dDi,
+      xLocDesemb,
+      uFDesemb,
+      tpViaTransp,
+      cExportador,
+      transportador,
+      products,
+      companyId,
+      Customer,
+      paymentMethodId,
+      orderId,
+      employeeId,
+      transpCpfCnpj,
+      transpEndereco,
+      transpEstado,
+      tranpCidade,
+    })
+
+    return response.status(201).json({ id })
+  }
+}

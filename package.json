@@ -1,0 +1,25 @@
+{
+  "name": "nfe-web",
+  "private": true,
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "typecheck": "lerna run typecheck",
+    "prepare": "husky install"
+  },
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^14.1.0",
+    "@nfe-web/eslint-config": "*",
+    "husky": "^7.0.4",
+    "lerna": "^4.0.0",
+    "lint-staged": "^11.2.6",
+    "typescript": "^4.4.4",
+    "react-select": "3.0.8"
+  }
+}

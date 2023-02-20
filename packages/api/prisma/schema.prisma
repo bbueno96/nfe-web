@@ -1,0 +1,764 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model Admin {
+  id           String @id @default(uuid()) @db.Uuid
+  name         String @db.VarChar(50)
+  login        String @unique @db.VarChar(50)
+  passwordHash String @db.VarChar(100)
+  companyId     String?  @default(uuid()) @db.Uuid
+  Budget Budget[]
+  Order Order[]
+  @@map("admins")
+}
+
+model Brand {
+  id           String @id @default(uuid()) @db.Uuid
+  description         String @db.VarChar(50)
+  companyId         String? @db.Uuid
+  Product Product[]
+  @@map("brand")
+}
+model TaxSituation {
+  id                  String @id @default(uuid()) @db.Uuid
+  description         String @db.VarChar(50)
+  aliquotaIcms        Decimal?  @db.Decimal(10, 2)
+  cst                 Int?
+  baseIcms            Decimal?  @default(100) @db.Decimal(10, 2)
+  simplesNacional     Boolean @default(false) @db.Boolean
+  aliquotaIcmsSt      Decimal?  @db.Decimal(10, 2)
+  baseIcmsSt          Decimal?  @db.Decimal(10, 2)
+  mva                 Decimal?  @db.Decimal(10, 3)
+  companyId           String @db.VarChar()
+  cfopState String?  @db.VarChar(5)
+  cfopInter String?  @db.VarChar(5)
+  cfopStatePf String?  @db.VarChar(5)
+  cfopInterPf String?  @db.VarChar(5)
+
+  Product Product[]
+  NfeProduto NfeProduto[]
+  @@map("tax_situation")
+}
+model Ibpt {
+  id                  String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  NCM_NBS             String? @db.VarChar(9)
+  Ex                  String? @db.VarChar(150)
+  Descricao           String? @db.VarChar()
+  AliqNac             Decimal?  @db.Decimal(10, 3)
+  AliqImp             Decimal?  @db.Decimal(10, 3)
+  AliqEst             Decimal?  @db.Decimal(10, 3)
+  AliqMun             Decimal?  @db.Decimal(10, 3)
+  uTrib               String? @db.VarChar(3)
+
+  @@map("ibpt")
+}
+model Group {
+  id            String @id @default(uuid()) @db.Uuid
+  description   String @db.VarChar(50)
+  companyId         String? @db.Uuid
+  Product Product[]
+
+  @@map("group")
+}
+
+model Customer {
+  id                String   @id @default(uuid()) @db.Uuid
+  cpfCnpj           String   @unique @db.VarChar(14)
+  stateInscription  String?  @db.VarChar(50)
+  name              String   @db.VarChar(50)
+  company           String?  @db.VarChar(100)
+  email             String   @db.VarChar(50)
+  phone             String   @db.VarChar(11)
+  mobilePhone       String   @db.VarChar(11)
+  dateCreated       DateTime @default(now()) @db.Timestamptz
+  additionalEmails  String?  @db.VarChar(150)
+  address           String   @db.VarChar(150)
+  addressNumber     String   @db.VarChar(20)
+  complement        String   @db.VarChar(50)
+  province          String   @db.VarChar(50)
+  postalCode        String   @db.VarChar(8)
+  cityId            Int
+  state             String   @db.VarChar(2)
+  disableAt         DateTime? @db.Timestamptz
+  observations      String?  @db.VarChar(250)
+  deliveryAddress   String? @db.VarChar()
+  companyId         String? @db.Uuid
+  informarGTIN        Boolean @default(false) @db.Boolean
+
+  Budget Budget[]
+  Order Order[]
+  Installment Installment[]
+  @@map("customer")
+}
+model Product {
+  id                String   @id @default(uuid()) @db.Uuid
+  group             String?  @db.Uuid
+  Group            Group? @relation(fields: [group], references:[id])
+  brand             String? @db.Uuid
+  Brand             Brand? @relation(fields: [brand], references:[id])
+  description       String  @db.VarChar(250)
+  stock               Decimal  @db.Decimal(10, 4)
+  stockMinium        Decimal  @db.Decimal(10, 4)
+  value            Decimal  @db.Decimal(10, 4)
+  valueOld            Decimal?  @db.Decimal(10, 4)
+  purchaseValue            Decimal?  @db.Decimal(10, 4)
+  lastPurchase      DateTime? @db.Timestamptz
+  lastSale           DateTime? @db.Timestamptz
+  createAt         DateTime @default(now()) @db.Timestamptz
+  st               String @db.Uuid
+  TaxSituation     TaxSituation @relation(fields: [st], references:[id])
+  und           String  @db.VarChar(3)
+  barCode        String?  @db.VarChar(250)
+  ipi        Decimal  @default(0) @db.Decimal(10,2)
+  disableAt         DateTime? @db.Timestamptz
+  ncm               String  @db.VarChar(8)
+  cfop        String  @db.VarChar(5)
+  pisCofins    Boolean @default(false) @db.Boolean
+  weight  Decimal?  @db.Decimal(10, 4)
+  height  Decimal?  @db.Decimal(10, 4)
+  width  Decimal?  @db.Decimal(10, 4)
+  length Decimal?  @db.Decimal(10, 4)
+  color  String?  @db.VarChar(250)
+  size Decimal?  @db.Decimal(10, 4)
+  companyId         String? @db.Uuid
+  cstPis String?  @db.VarChar(8)
+  alqPis Decimal?  @db.Decimal(10, 4)
+  cstCofins String?  @db.VarChar(8)
+  alqCofins Decimal?  @db.Decimal(10, 4)
+  cf                    Int?
+  cod String?  @db.VarChar()
+
+  NfeProduto NfeProduto[]
+  BudgetProducts BudgetProducts[]
+  OrderProducts OrderProducts[]
+  ProviderProducts ProviderProducts[]
+  StockProducts StockProducts []
+ @@map("product")
+}
+
+
+model Parameter {
+  id                  String  @id @default(uuid()) @db.Uuid
+  nfeHomologation     Boolean @default(false)
+  pfx                 Bytes?  @db.ByteA
+  passwordCert        String? @db.VarChar(100)
+  nfeRazao            String? @db.VarChar(250)
+  nfeFantasia         String? @db.VarChar(250)
+  nfeCnpj             String? @db.VarChar(100)
+  nfeIe               String? @db.VarChar(100)
+  nfeLagradouro       String? @db.VarChar(250)
+  nfeNumero           String? @db.VarChar(100)
+  nfeBairro           String? @db.VarChar(100)
+  nfeUf               String? @db.VarChar(100)
+  nfeUfCod            Int?
+  nfeCidade           String? @db.VarChar(100)
+  nfeCidadeCod        Int?
+  nfeCep              String? @db.VarChar(100)
+  nfeFone             String? @db.VarChar(100)
+  nfeCsc              String? @db.VarChar(250)
+  nfeIndPresenca      Int?
+  nfeIm               String? @db.VarChar(250)
+  nfeCnae             String? @db.VarChar(250)
+  nfeCrt              Int?
+  emailHost           String? @db.VarChar(100)
+  emailPort           Int?
+  emailUsername       String? @db.VarChar(100)
+  emailPassword       String? @db.VarChar(250)
+  emailCopyEmail      String? @db.VarChar(250)
+  serie               Int?
+  ultNota             Int?
+  getApoio            Boolean @default(false)
+  companyId           String? @unique @db.Uuid
+  email               String? @db.VarChar(100)
+  classificationId    String?  @db.Uuid
+  fine                         Decimal?  @db.Decimal(10, 4)
+  interest                     Decimal?  @db.Decimal(10, 4)
+
+  @@map("parameter")
+}
+
+model Nfe {
+  id               String  @id @default(uuid()) @db.Uuid
+  cliente           String? @db.Uuid
+  razaoSocial       String? @db.VarChar(250)
+  endereco          String? @db.VarChar(250)
+  numero            String? @db.VarChar(30)
+  cidade            String? @db.VarChar(150)
+  estado            String? @db.VarChar(2)
+  bairro            String? @db.VarChar(100)
+  complemento       String? @db.VarChar(150)
+  cep               String? @db.VarChar(20)
+  fornecedor        String? @db.Uuid
+  Provider        Provider? @relation(fields: [fornecedor], references:[id])
+  fone              String? @db.VarChar(20)
+  data              DateTime @default(now()) @db.Timestamptz
+  numeroNota        Int?
+  status            String @db.VarChar(150)
+  tipo              String @db.VarChar(20)
+  transpNome        String? @db.VarChar(20)
+  volumes           Decimal?  @db.Decimal(10, 4)
+  especie           String? @db.VarChar(150)
+  pesoBruto         Decimal?  @db.Decimal(10, 4)
+  pesoLiquido       Decimal?  @db.Decimal(10, 4)
+  frete             Decimal?  @db.Decimal(10, 4)
+  seguro            Decimal?  @db.Decimal(10, 4)
+  outrasDespesas    Decimal?  @db.Decimal(10, 4)
+  freteOutros       Decimal?  @db.Decimal(10, 4)
+  desconto          Decimal?  @db.Decimal(10, 4)
+  totalCheque       Decimal?  @db.Decimal(10, 4)
+  totalDinheiro     Decimal?  @db.Decimal(10, 4)
+  totalCartaoCredito Decimal?  @db.Decimal(10, 4)
+  totalBoleto       Decimal?  @db.Decimal(10, 4)
+  totalOutros       Decimal?  @db.Decimal(10, 4)
+  totalCartaoDebito Decimal?  @db.Decimal(10, 4)
+  totalNota         Decimal?  @db.Decimal(10, 4)
+  totalProduto      Decimal?  @db.Decimal(10, 4)
+  serie             Int?
+  qtdePagina        Int?
+  qtdeItens         Int?
+  qtdeProdutos      Int?
+  baseICMS          Decimal  @db.Decimal(10, 4)
+  valorICMS         Decimal?  @db.Decimal(10, 4)
+  valorTributo      Decimal?  @db.Decimal(10, 4)
+  rgIe              String? @db.VarChar(150)
+  cpfCnpj           String? @db.VarChar(150)
+  dataSaida         DateTime @default(now()) @db.Timestamptz
+  dataOrigem        DateTime @default(now()) @db.Timestamptz
+  estorno           Boolean @default(false)
+  complementar      Boolean @default(false)
+  dataAutorizacao   DateTime @default(now()) @db.Timestamptz
+  naturezaOp        String? @db.VarChar(150)
+  tipoFrete         Int?
+  transpCpfCnpj     String? @db.VarChar(150)
+  transpRgIe        String? @db.VarChar(150)
+  transpEndereco    String? @db.VarChar(150)
+  transpEstado      String? @db.VarChar(150)
+  transpCidade      String? @db.VarChar(150)
+  observacoes       String? @db.VarChar(150)
+  informacoesFisco  String? @db.VarChar(150)
+  nfeRef            Int?
+  idCountry         Int? @default(55)
+  descCountry       String? @db.VarChar(150)
+  nDi               String? @db.VarChar(150)
+  dDi               DateTime @default(now()) @db.Timestamptz
+  xLocDesemb        String? @db.VarChar(150)
+  uFDesemb          String? @db.VarChar(150)
+  tpViaTransp       Int?
+  cExportador       String? @db.VarChar(150)
+  sequencia         Int?
+  nomeLote          String? @db.VarChar(150)
+  impressa          Boolean @default(false)
+  dataImpressao     DateTime @default(now()) @db.Timestamptz
+  emailEnviado      Boolean @default(false)
+  cartaCorrecao     String? @db.VarChar(250)
+  statuscartaCorrecao String? @db.VarChar(150)
+  nSeqEventos       Int?
+  reciboLote        String? @db.VarChar(150)
+  chave             String? @db.VarChar(150)
+  transportador     String? @db.Uuid
+  Transportador     Transportador? @relation(fields: [transportador], references:[id])
+  processado        Boolean @default(false)
+  erros             String?
+  companyId         String? @db.Uuid
+  paymentMethodId       String? @db.Uuid
+  PayMethod             PayMethod? @relation(fields: [paymentMethodId], references:[id])
+  orderId          String? @db.Uuid
+  Order             Order? @relation(fields: [orderId], references:[id])
+  vIpi             Decimal?  @db.Decimal(10, 4)
+  vST              Decimal?  @db.Decimal(10, 4)
+
+  NfeProduto NfeProduto[]
+  Installment Installment[]
+  BankSlipStorege BankSlipStorege[]
+  MdfeBody MdfeBody[]
+
+  @@map("nfe")
+}
+
+model NfeProduto {
+
+  id                    String  @id @default(uuid()) @db.Uuid
+  nota                  String? @db.Uuid
+  Nfe                   Nfe? @relation(fields: [nota], references:[id])
+  produto               String? @db.Uuid
+  Product               Product? @relation(fields: [produto], references:[id])
+  descricao             String @db.VarChar(150)
+  cfop                  String @db.VarChar(150)
+  ncm                   String @db.VarChar(8)
+  quantidade            Decimal?  @db.Decimal(10, 4)
+  quantidadeRef         Decimal?  @db.Decimal(10, 4)
+  unidade               String @db.VarChar(3)
+  unitario              Decimal?  @db.Decimal(10, 4)
+  total                 Decimal?  @db.Decimal(10, 4)
+  st                    Int
+  stNfe                 String? @db.Uuid
+  TaxSituation          TaxSituation? @relation(fields: [stNfe], references:[id])
+  cf                    Int?
+  baseICMS              Decimal?  @db.Decimal(10, 4)
+  valorICMS             Decimal?  @db.Decimal(10, 4)
+  aliquotaICMS          Decimal?  @db.Decimal(10, 4)
+  baseTributo           Decimal?  @db.Decimal(10, 4)
+  refProduto            String?   @db.VarChar(250)
+  cest                  String?   @db.VarChar(150)
+  baseIcmsSt            Decimal?  @db.Decimal(10, 4)
+  valorIcmsSt           Decimal?  @db.Decimal(10, 4)
+  aliquotaIcmsSt        Decimal?  @db.Decimal(10, 4)
+  mva                   Decimal?  @db.Decimal(10, 4)
+  companyId             String? @db.Uuid
+  pisCofins    Boolean @default(false) @db.Boolean
+    cstPis String?  @db.VarChar(8)
+  alqPis Decimal?  @db.Decimal(10, 4)
+  cstCofins String?  @db.VarChar(8)
+  alqCofins Decimal?  @db.Decimal(10, 4)
+    cod String?  @db.VarChar()
+
+  @@map("nfe_produto")
+}
+
+model Transportador {
+  id                  String  @id @default(uuid()) @db.Uuid
+  cpfCnpj             String   @unique @db.VarChar(14)
+  rgIe                String?  @db.VarChar(50)
+  nome                String  @db.VarChar(150)
+  endereco            String?  @db.VarChar(150)
+  cidade              String?  @db.VarChar(150)
+  estado              String?  @db.VarChar(2)
+  veiculoPlaca        String?  @db.VarChar(10)
+  veiculoEstado       String?  @db.VarChar(2)
+  cep                 String?  @db.VarChar(8)
+  fone                String?  @db.VarChar(12)
+  obs                 String?  @db.VarChar(250)
+  email               String?  @db.VarChar(250)
+  enviaEmailNFE       Boolean @default(false) @db.Boolean
+
+  Nfe Nfe[]
+  @@map("transportador")
+}
+model Provider {
+    id                String   @id @default(uuid()) @db.Uuid
+  cpfCnpj           String   @db.VarChar(14)
+  stateInscription  String?  @db.VarChar(50)
+  name              String   @db.VarChar(50)
+  company           String?  @db.VarChar(100)
+  email             String   @db.VarChar(50)
+  phone             String   @db.VarChar(11)
+  mobilePhone       String   @db.VarChar(11)
+  dateCreated       DateTime @default(now()) @db.Timestamptz
+  additionalEmails  String?  @db.VarChar(150)
+  address           String   @db.VarChar(150)
+  addressNumber     String   @db.VarChar(20)
+  complement        String   @db.VarChar(50)
+  province          String   @db.VarChar(50)
+  postalCode        String   @db.VarChar(8)
+  cityId            Int
+  state             String   @db.VarChar(2)
+  disableAt         DateTime? @db.Timestamptz
+  observations      String?  @db.VarChar(250)
+  deliveryAddress   String? @db.VarChar()
+  companyId         String? @db.Uuid
+  informarGTIN        Boolean @default(false) @db.Boolean
+
+  Nfe Nfe[]
+  ProviderProducts ProviderProducts[]
+  @@map("provider")
+}
+
+
+model Cest {
+  ID                  String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  CEST                 String    @db.VarChar(100)
+  NCM                 String?   @db.VarChar(100)
+  DESCRICAO           String?
+  @@map("cest")
+}
+
+
+model NfeRef {
+  id                    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nota                  String? @db.Uuid
+  estorno               Boolean @default(false) @db.Boolean
+  companyId             String? @db.Uuid
+
+  @@map("nfe_ref")
+}
+model NfeStorege {
+  id                    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nome                  String  @db.VarChar(250)
+  conteudo              Bytes?  @db.ByteA
+  companyId             String? @db.Uuid
+
+  @@map("nfe_storage")
+}
+
+model NfeLoteQueue {
+  id                    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  statusLote                  String?  @db.VarChar(250)
+  recibo              String?  @db.VarChar(250)
+  companyId             String? @db.Uuid
+
+  @@map("nfe_lote_queue")
+}
+
+model BankAccount {
+  id                           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  description                  String?  @db.VarChar(250)
+  institution                  Int?
+  number                       Int
+  verifyingDigit               Int
+  agency                       Int
+  disabledAt                   DateTime? @db.Timestamptz
+  companyId                    String? @db.Uuid
+  ourNumber                    Int?
+  sequenceLot                  Int?
+  wallet                       Int?
+  AccountPayment AccountPayment[]
+  PayMethod PayMethod []
+  BankRemittance BankRemittance[]
+  Installment Installment []
+  @@map("bank_account")
+}
+
+model Classification {
+  id                           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code                         String?  @db.VarChar(250)
+  description                  String?  @db.VarChar(250)
+  isGroup                      Boolean @default(false) @db.Boolean
+  parentId                     String? @db.Uuid
+  disabledAt                   DateTime? @db.Timestamptz
+  companyId                    String? @db.Uuid
+
+  AccountPayable AccountPayable[]
+  @@map("classification")
+}
+
+model AccountPayable {
+  id                           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt                    DateTime @default(now()) @db.Timestamptz
+  description                  String  @db.VarChar(250)
+  providerName                  String?  @db.VarChar(250)
+  dueDate                      DateTime @db.Timestamptz
+  value                        Decimal  @db.Decimal(10, 4)
+  discount                     Decimal  @db.Decimal(10, 4)
+  addition                     Decimal  @db.Decimal(10, 4)
+  numberInstallment            Int
+  installments                 Int
+  providerId                   String @db.Uuid
+  document                     String?  @db.VarChar(250)
+  classificationId             String @db.Uuid
+  Classification               Classification @relation(fields: [classificationId], references:[id])
+  disabledAt                   DateTime? @db.Timestamptz
+  accountPaymentId             String? @db.Uuid
+  AccountPayment               AccountPayment? @relation(fields: [accountPaymentId], references:[id])
+  companyId                    String? @db.Uuid
+
+  @@map("account_payable")
+}
+
+model AccountPayment {
+  id                           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt                    DateTime @default(now()) @db.Timestamptz
+  value                        Decimal  @db.Decimal(10, 4)
+  paymentMeanId                Int
+  bankAccountId                String @db.Uuid
+  BankAccount                  BankAccount @relation(fields: [bankAccountId], references:[id])
+  companyId                    String? @db.Uuid
+
+  AccountPayable  AccountPayable[]
+  @@map("account_payment")
+}
+
+model Budget {
+  id                           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  numberBudget                 Int
+  createdAt                    DateTime @default(now()) @db.Timestamptz
+  status                       Int?
+  discount                     Decimal?  @db.Decimal(10, 4)
+  total                        Decimal  @db.Decimal(10, 4)
+  deliveryForecast             DateTime? @db.Timestamptz
+  customerId                   String? @db.Uuid
+  Customer                     Customer? @relation(fields: [customerId], references:[id])
+  shipping	                   Decimal?  @db.Decimal(10, 4)
+  customerApoioId               String? @db.Uuid
+  customerApoioName           String? @db.VarChar(250)
+  employeeId                   String @db.Uuid
+  Admin                        Admin @relation(fields: [employeeId], references:[id])
+  companyId                    String? @db.Uuid
+  auth                         Boolean @default(false) @db.Boolean
+  payMethodId                  String? @db.Uuid
+  PayMethod                    PayMethod? @relation(fields: [payMethodId], references:[id])
+  obs                         String?  @db.VarChar(250)
+  stateInscriptionApoio       String?  @db.VarChar(250)
+  emailApoio                  String?  @db.VarChar(250)
+  phoneApoio                  String?  @db.VarChar(250)
+  addressApoio                String?  @db.VarChar(250)
+  addressNumberApoio          String?  @db.VarChar(250)
+  complementApoio             String?  @db.VarChar(250)
+  provinceApoio               String?  @db.VarChar(250)
+  postalCodeApoio             String?  @db.VarChar(250)
+  cityIdApoio                 Int?
+  stateApoio                  String?  @db.VarChar(250)
+  cpfCnpjApoio                String?  @db.VarChar(14)
+  disabledAt                   DateTime? @db.Timestamptz
+
+  BudgetProducts BudgetProducts[]
+  Order Order[]
+   @@map("budget")
+}
+
+model BudgetProducts {
+  id                    String  @id @default(uuid()) @db.Uuid
+  budgetId              String? @db.Uuid
+  Budget                Budget? @relation(fields: [budgetId], references:[id])
+  productId               String? @db.Uuid
+  Product               Product? @relation(fields: [productId], references:[id])
+  amount            Decimal?  @db.Decimal(10, 4)
+  unitary              Decimal?  @db.Decimal(10, 4)
+  total                 Decimal?  @db.Decimal(10, 4)
+  companyId             String? @db.Uuid
+  @@map("budget_products")
+}
+
+model PayMethod {
+  id                           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  description                  String  @db.VarChar(250)
+  fine                         Decimal?  @db.Decimal(10, 4)
+  interest                     Decimal?  @db.Decimal(10, 4)
+  dueDay                       Int
+  numberInstallments           Int
+  bankSlip                     Boolean @default(false) @db.Boolean
+  wallet                       Int?
+  createdAt                    DateTime @default(now()) @db.Timestamptz
+  disableAt                    DateTime? @db.Timestamptz
+  companyId                    String? @db.Uuid
+  bankAccountId                String? @db.Uuid
+  BankAccount                  BankAccount? @relation(fields: [bankAccountId], references:[id])
+  generateInstallmens          Boolean @default(true) @db.Boolean
+  Budget  Budget[]
+  Order Order[]
+  Installment Installment[]
+  Nfe Nfe[]
+  @@map("pay_method")
+}
+model Order {
+  id                           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  numberOrder                  Int
+  createdAt                    DateTime @default(now()) @db.Timestamptz
+  status                       Int?
+  discount                     Decimal?  @db.Decimal(10, 4)
+  total                        Decimal  @db.Decimal(10, 4)
+  customerId                   String? @db.Uuid
+  Customer                     Customer? @relation(fields: [customerId], references:[id])
+  shipping	                   Decimal?  @db.Decimal(10, 4)
+  customerApoioId               String? @db.Uuid
+  customerApoioName           String? @db.VarChar(250)
+  employeeId                   String @db.Uuid
+  Admin                        Admin @relation(fields: [employeeId], references:[id])
+  companyId                    String? @db.Uuid
+  payMethodId                  String? @db.Uuid
+  PayMethod                    PayMethod? @relation(fields: [payMethodId], references:[id])
+  obs                          String?  @db.VarChar(250)
+  budgetId                     String? @db.Uuid
+  Budget                       Budget? @relation(fields: [budgetId], references:[id])
+  disabledAt                   DateTime? @db.Timestamptz
+    stateInscriptionApoio       String?  @db.VarChar(250)
+  emailApoio                  String?  @db.VarChar(250)
+  phoneApoio                  String?  @db.VarChar(250)
+  addressApoio                String?  @db.VarChar(250)
+  addressNumberApoio          String?  @db.VarChar(250)
+  complementApoio             String?  @db.VarChar(250)
+  provinceApoio               String?  @db.VarChar(250)
+  postalCodeApoio             String?  @db.VarChar(250)
+  cityIdApoio                 Int?
+  stateApoio                  String?  @db.VarChar(250)
+  cpfCnpjApoio                String?  @db.VarChar(14)
+
+  OrderProducts OrderProducts[]
+  Nfe Nfe[]
+   @@map("order")
+}
+
+model OrderProducts {
+  id                    String  @id @default(uuid()) @db.Uuid
+  orderId              String? @db.Uuid
+  Order                Order? @relation(fields: [orderId], references:[id])
+  productId               String? @db.Uuid
+  Product               Product? @relation(fields: [productId], references:[id])
+  amount            Decimal?  @db.Decimal(10, 4)
+  unitary              Decimal?  @db.Decimal(10, 4)
+  total                 Decimal?  @db.Decimal(10, 4)
+  companyId             String? @db.Uuid
+  @@map("order_products")
+}
+
+
+model Installment {
+  id                    String  @id @default(uuid()) @db.Uuid
+  numeroDoc             String?  @db.VarChar(250)
+  createdAt                    DateTime @default(now()) @db.Timestamptz
+  customerId                   String? @db.Uuid
+  Customer                     Customer? @relation(fields: [customerId], references:[id])
+   customerApoioId               String? @db.Uuid
+  customerApoioName           String? @db.VarChar(250)
+  numberInstallment     Int
+  dueDate               DateTime @db.Timestamptz
+  paid                  Boolean @default(false) @db.Boolean
+  value                 Decimal?  @db.Decimal(10, 4)
+  fine                  Decimal?  @db.Decimal(10, 4)
+  interest              Decimal?  @db.Decimal(10, 4)
+  nfeId                 String? @db.Uuid
+  Nfe                   Nfe? @relation(fields: [nfeId], references:[id])
+  paymentMethodId       String? @db.Uuid
+  PayMethod             PayMethod? @relation(fields: [paymentMethodId], references:[id])
+  ourNumber             String?  @db.VarChar(250)
+  digitableLine         String?  @db.VarChar(250)
+  checkNumber           String?  @db.VarChar(250)
+  checkDueDate          DateTime? @db.Timestamptz
+  checkCpfCnpj          String?  @db.VarChar(14)
+  checkName             String?  @db.VarChar(14)
+  checkAgency           Int?
+  checkAccount          Int?
+  disabledAt            DateTime? @db.Timestamptz
+  companyId             String? @db.Uuid
+  BankRemittanceId      String? @db.Uuid
+  BankRemittance        BankRemittance? @relation(fields: [BankRemittanceId], references:[id])
+    stateInscriptionApoio       String?  @db.VarChar(250)
+  emailApoio                  String?  @db.VarChar(250)
+  phoneApoio                  String?  @db.VarChar(250)
+  addressApoio                String?  @db.VarChar(250)
+  addressNumberApoio          String?  @db.VarChar(250)
+  complementApoio             String?  @db.VarChar(250)
+  provinceApoio               String?  @db.VarChar(250)
+  postalCodeApoio             String?  @db.VarChar(250)
+  cityIdApoio                 Int?
+  stateApoio                  String?  @db.VarChar(250)
+  cpfCnpjApoio                String?  @db.VarChar(14)
+  wallet                      Int?
+  bankAccountId               String? @db.Uuid
+   BankAccount                  BankAccount? @relation(fields: [bankAccountId], references:[id])
+  bankSlip                    Boolean? @db.Boolean
+  @@map("installment")
+
+  BankSlipStorege BankSlipStorege[]
+}
+
+model BankSlipStorege {
+  id                    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  installmentId          String? @db.Uuid
+  Installment           Installment? @relation(fields: [installmentId], references:[id])
+  conteudo              Bytes?  @db.ByteA
+  companyId             String? @db.Uuid
+  nfeId                 String? @db.Uuid
+  Nfe                   Nfe? @relation(fields: [nfeId], references:[id])
+
+
+  @@map("bank_slip_storege")
+}
+
+model BankRemittance  {
+  id                    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+   createdAt                    DateTime @default(now()) @db.Timestamptz
+  numberLot              Int?
+  conteudo              String?
+  companyId             String? @db.Uuid
+  bankAccountId                String? @db.Uuid
+  BankAccount                  BankAccount? @relation(fields: [bankAccountId], references:[id])
+  wallet                      Int?
+Installment Installment[]
+  @@map("bank_remittance")
+}
+
+model ProviderProducts  {
+  id                    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId               String? @db.Uuid
+  Product               Product? @relation(fields: [productId], references:[id])
+  productIdProvider              String? @db.VarChar(250)
+  providerId        String? @db.Uuid
+  Provider        Provider? @relation(fields: [providerId], references:[id])
+  companyId             String? @db.Uuid
+
+  @@map("provider_products")
+}
+
+model StockProducts  {
+  id                    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId             String @db.Uuid
+  Product               Product @relation(fields: [productId], references:[id])
+  amount                Decimal  @db.Decimal(10, 4)
+  type                  String? @db.VarChar(1)
+  generateId            String? @db.Uuid
+  numeroDoc             String?  @db.VarChar(250)
+  number                Int?
+  typeGenerate          Int?
+  createdAt             DateTime @default(now()) @db.Timestamptz
+  employeeId                   String @db.Uuid
+  companyId             String? @db.Uuid
+
+  @@map("stock_product")
+}
+
+model Conductor  {
+  id                    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                  String  @db.VarChar(250)
+  cpf                   String   @unique @db.VarChar(14)
+  placa                 String  @db.VarChar(250)
+  tara                  Decimal  @db.Decimal(10, 4)
+  capKG                 Decimal  @db.Decimal(10, 4)
+  capM3                 Decimal  @db.Decimal(10, 4)
+  companyId             String? @db.Uuid
+Mdfe Mdfe[]
+    @@map("conductor")
+}
+
+model Mdfe  {
+  id                    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  status                  String? @db.VarChar(1)
+  numero                Int
+  serie                 Int
+  createdAt             DateTime @default(now()) @db.Timestamptz
+  ufIni                 String @db.VarChar(2)
+  ufFim                 String @db.VarChar(2)
+  codMunCarga           Int
+  descMunCarga          String  @db.VarChar(250)
+  dataSaida             DateTime @db.Timestamptz
+  percurso              String? @db.VarChar(250)
+  codMunDescarca        Int
+  munDescarca           String @db.VarChar(250)
+  vTotal                Decimal  @db.Decimal(10, 4)
+  qCarga                Decimal  @db.Decimal(10, 4)
+  obs                   String?  @db.VarChar(250)
+  name                  String  @db.VarChar(250)
+  cpf                   String   @unique @db.VarChar(14)
+  placa                 String  @db.VarChar(250)
+  tara                  Decimal  @db.Decimal(10, 4)
+  capKG                 Decimal  @db.Decimal(10, 4)
+  capM3                 Decimal  @db.Decimal(10, 4)
+  conductorId           String? @db.Uuid
+  Conductor             Conductor? @relation(fields: [conductorId], references:[id])
+  companyId             String? @db.Uuid
+  chave                 String?  @db.VarChar(250)
+
+MdfeBody MdfeBody[]
+  @@map("mdfe")
+}
+
+model MdfeBody  {
+  id                    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mdfeId                String @db.Uuid
+  Mdfe                  Mdfe @relation(fields: [mdfeId], references:[id])
+  nfeId                 String @db.Uuid
+  Nfe                   Nfe @relation(fields: [nfeId], references:[id])
+  vTotal                Decimal  @db.Decimal(10, 4)
+  qCarga                Decimal  @db.Decimal(10, 4)
+chaveNfe                 String?  @db.VarChar(250)
+
+
+  @@map("mdfe_body")
+}

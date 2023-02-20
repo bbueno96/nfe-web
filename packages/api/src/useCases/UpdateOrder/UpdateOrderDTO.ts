@@ -1,0 +1,29 @@
+export interface IUpdateOrderDTO {
+  id: string
+  createdAt: Date
+  status: number
+  discount: number
+  total: number
+  customerId: string
+  shipping: number
+  employeeId: string
+  companyId: string
+  products: any[]
+  obs?: string
+  payMethodId?: string
+  Customer?: any
+  customerApoioId?: string
+  customerApoioName?: string
+  stateInscriptionApoio?: string
+  emailApoio?: string
+  phoneApoio?: string
+  addressApoio?: string
+  addressNumberApoio?: string
+  complementApoio?: string
+  provinceApoio?: string
+  postalCodeApoio?: string
+  cityIdApoio?: number
+  cityApoio?: string
+  stateApoio?: string
+  cpfCnpjApoio?: string
+}
