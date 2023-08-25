@@ -1,217 +1,216 @@
 import { addYears, addMinutes } from 'date-fns'
 
+// eslint-disable-next-line import-helpers/order-imports
+import { Prisma } from '@prisma/client'
+import { PrismaTransaction } from '../../../prisma/types'
 import { getAliquotaTributo } from '../../custom/getAliquotaTributo'
 import { getCESTByNCM } from '../../custom/getCestByNCM'
+import { Nfe } from '../../entities/Nfe'
+import { NfeProducts } from '../../entities/NfeProducts'
 import { Parameter } from '../../entities/Parameter'
 import { getCityCode } from '../../ibge/getCityCode'
 import { stateCode } from '../../ibge/state'
 import { NfeProductsRepository } from '../../repositories/NfeProductsRepository'
 import { NfeRepository } from '../../repositories/NfeRepository'
-import { TaxSituationsRepository } from '../../repositories/TaxSituationsRepository'
+import { ProductTaxRepository } from '../../repositories/ProductTaxRepository'
 import { appendLine } from '../../utils/appendLine'
-import { cfopChange } from '../../utils/cfopChange'
-
-enum FormasPagamento {
-  OutrasFormas,
-  CartaoCredito,
-  CartaoDebito,
-  Boleto,
-}
 
 export enum OperacaoNFe {
   Mesmoestado,
   Interestadual,
   Internacional,
 }
-export async function validationNfe(id: string, parameters: Parameter) {
+
+export async function validationNfe(id: string, parameters: Parameter, prismaTransaction: PrismaTransaction) {
   const nfeRepository = new NfeRepository()
-  const taxSituationsRepository = new TaxSituationsRepository()
+  const productTaxRepository = new ProductTaxRepository()
   const nfeProductsRepository = new NfeProductsRepository()
   const oneYearLater = addYears(new Date(), 1)
   let erros = ''
   const nota = await nfeRepository.findById(id)
-  const updateNota: any = {}
-  updateNota.cep = nota.cep.replace(/\D/g, '')
-  if (nota.fone) updateNota.fone = nota.fone.replace(/\D/g, '')
+  if (nota) {
+    const updateNota: Nfe = nota
 
-  if (nota.data > oneYearLater)
-    erros = appendLine(erros, 'A data da nota esta superior a 1 ano, conferir senão há cancelamento!')
+    updateNota.cep = nota.cep?.replace(/\D/g, '')
+    if (nota.fone) updateNota.fone = nota.fone.replace(/\D/g, '')
 
-  if (nota.tipo !== 'ENTRADA' && nota.tipo !== 'SAIDA')
-    erros = appendLine(erros, 'tipo da Nota deve ser ENTRADA ou SAIDA!')
+    if (nota.data > oneYearLater)
+      erros = appendLine(erros, 'A data da nota esta superior a 1 ano, conferir senão há cancelamento!')
 
-  if (nota.tipo === 'SAIDA' && !nota.cliente) erros = appendLine(erros, 'Favor selecionar cliente para nota de Saida!')
+    if (nota.tipo !== 'ENTRADA' && nota.tipo !== 'SAIDA')
+      erros = appendLine(erros, 'tipo da Nota deve ser ENTRADA ou SAIDA!')
 
-  if (+nota.totalNota < 0) erros = appendLine(erros, 'Total está com valor negativo!')
-  if (!nota.endereco || nota.endereco.length < 2) erros = appendLine(erros, 'Verifique o endereço!')
+    if (nota.tipo === 'SAIDA' && !nota.cliente && !nota.fornecedor)
+      erros = appendLine(erros, 'Favor selecionar cliente para nota de Saida!')
 
-  if (!nota.estado || nota.estado.length < 2) erros = appendLine(erros, 'Verifique o estado!')
+    if (+(nota.totalNota || 0) < 0) erros = appendLine(erros, 'Total está com valor negativo!')
 
-  if (!nota.cep || nota.cep.length < 8) erros = appendLine(erros, 'Verifique o cep!')
+    if (!nota.endereco || nota.endereco.length < 2) erros = appendLine(erros, 'Verifique o endereço!')
 
-  if (!nota.cidade) erros = appendLine(erros, 'Verifique a cidade!')
+    if (!nota.estado || nota.estado.length < 2) erros = appendLine(erros, 'Verifique o estado!')
 
-  if (!nota.bairro || nota.bairro.length < 2) erros = appendLine(erros, 'Verifique o bairro!')
+    if (!nota.cep || nota.cep.length < 8) erros = appendLine(erros, 'Verifique o cep!')
 
-  if (!nota.numero) erros = appendLine(erros, 'Verifique o número!')
+    if (!nota.cidade) erros = appendLine(erros, 'Verifique a cidade!')
 
-  if (!nota.razaoSocial || nota.razaoSocial.length < 2) erros = appendLine(erros, 'Verifique o bairro!')
+    if (!nota.bairro || nota.bairro.length < 2) erros = appendLine(erros, 'Verifique o bairro!')
 
-  if (!nota.cep) erros = appendLine(erros, 'Verifique o cep!')
+    if (!nota.numero) erros = appendLine(erros, 'Verifique o número!')
 
-  const codIbge = getCityCode(nota.cidade, stateCode[nota.estado])
-  if (codIbge === 0 && nota.estado.toUpperCase() !== 'EX') erros = appendLine(erros, 'Verifique a cidade!!')
+    if (!nota.razaoSocial || nota.razaoSocial.length < 2) erros = appendLine(erros, 'Verifique o bairro!')
 
-  const produtos = await nfeProductsRepository.findByNfe(nota.id)
+    if (!nota.cep) erros = appendLine(erros, 'Verifique o cep!')
 
-  if (produtos.length === 0) erros = appendLine(erros, 'Favor adicionar os produtos da NFe!')
+    const codIbge = getCityCode(nota.cidade || '', stateCode[nota.estado || 'SP'])
+    if (codIbge === 0 && nota.estado?.toUpperCase() !== 'EX') erros = appendLine(erros, 'Verifique a cidade!!')
 
-  if (produtos.some(p => !p.stNfe)) erros = appendLine(erros, 'Verifique a tributação dos produtos!!')
+    if (!nota.volumes || Number(nota.volumes) < 0) updateNota.volumes = new Prisma.Decimal(1)
 
-  const totalProdutos = produtos.reduce((acc, item) => acc + parseFloat(item.quantidade) * parseFloat(item.unitario), 0)
-  if (totalProdutos === 0 && !nota.complementar) erros = appendLine(erros, 'Produto com valor zerado!')
-  const items = produtos.reduce((acc, item) => acc + parseFloat(item.quantidade), 0)
-  const totalNota =
-    totalProdutos - parseFloat('' + nota.desconto) + parseFloat('' + nota.frete) + parseFloat('' + nota.outrasDespesas)
-  // // Transportador
-  // if (nota.transpNome) {
-  //  console.log('entrou transp')
+    if (!nota.especie) updateNota.especie = 'Vol'
 
-  //  if (data.transp) {
-  // updateNota.Transportador = transportador.id
-  // updateNota.tipofrete = 0
-  //    console.log(data.transp)
-  //    if (data.transp.cpfCnpj) updateNota.TranspCPFCNPJ = data.transp.cpfCnpj.trim()
+    if (+(nota.pesoBruto ?? 0) < 0)
+      erros = appendLine(erros, 'O peso bruto deve ser informado de forma numérica maior ou igual a zero!')
 
-  // if (transportador.) updateNota.TranspRGIE = transportador.rgIe.trim()
+    if (+(nota.pesoLiquido ?? 0) < 0)
+      erros = appendLine(erros, 'O peso liquído deve ser informado de forma numérica maior ou igual a zero!')
 
-  //    if (data.transp.address) updateNota.Transpendereco = data.transp.address.trim()
+    if (+(nota.frete ?? 0) < 0)
+      erros = appendLine(erros, 'O frete deve ser informado de forma numérica maior ou igual a zero!')
 
-  //    if (data.transp.city) updateNota.Transpcidade = data.transp.city.trim()
+    if (+(nota.seguro ?? 0) < 0)
+      erros = appendLine(erros, 'O seguro deve ser informado de forma numérica maior ou igual a zero!')
 
-  //    if (data.transp.state) updateNota.Transpestado = data.transp.state.trim()
+    if (+(nota.outrasDespesas ?? 0) < 0)
+      erros = appendLine(erros, 'As outras despesas devem ser informadas de forma numérica maior ou igual a zero!')
 
-  //     if (data.ufTransp) updateNota.Veiculoestado = data.ufTransp.trim()
+    if (+(nota.freteOutros ?? 0) < 0)
+      erros = appendLine(erros, 'O frete outros deve ser informado de forma numérica maior ou igual a zero!!')
 
-  //     if (data.placaTransp) updateNota.VeiculoPlaca = data.placaTransp.trim()
-  //   }
-  // }
+    if (+(nota.desconto ?? 0) < 0) erros = appendLine(erros, 'desconto não deve ser informado de forma negativa!')
 
-  if (!nota.volumes || Number(nota.volumes) < 0) updateNota.Volumes = 1
+    let totalPagamentos = nota.totalDinheiro
+      ?.add(nota.totalCheque || 0)
+      .add(nota.totalCartaoDebito || 0)
+      .add(nota.totalCartaoCredito || 0)
+      .add(nota.totalBoleto || 0)
+      .add(nota.totalOutros || 0)
 
-  if (!nota.especie) updateNota.especie = 'Vol'
+    const produtos = await nfeProductsRepository.findByNfeAll(nota.id)
+    if (produtos.length > 0) {
+      if (produtos.length === 0) erros = appendLine(erros, 'Favor adicionar os produtos da NFe!')
 
-  if (+nota.pesoBruto < 0)
-    erros = appendLine(erros, 'O peso bruto deve ser informado de forma numérica maior ou igual a zero!')
+      const totalProdutos = produtos.reduce(
+        (acc, item) => (item.quantidade ? item.quantidade?.times(item.unitario || 0).add(acc) : acc),
+        0,
+      )
+      if (totalProdutos === 0 && !nota.complementar) erros = appendLine(erros, 'Produto com valor zerado!')
 
-  if (+nota.pesoLiquido < 0)
-    erros = appendLine(erros, 'O peso liquído deve ser informado de forma numérica maior ou igual a zero!')
+      const items = produtos.reduce((acc, item) => (item.quantidade ? item.quantidade?.add(acc) : acc), 0)
+      const outros = nota.frete?.add(nota.outrasDespesas || 0)
+      const totalNota = outros?.add(totalProdutos).sub(nota.desconto || 0)
+      if (!nota.orderId) {
+        nota.totalOutros = new Prisma.Decimal(totalNota || 0)
+        totalPagamentos = new Prisma.Decimal(totalNota || 0)
+      }
+      const dif = totalNota?.sub(totalPagamentos || 0)
+      if ((dif || 0) > new Prisma.Decimal(0.001)) {
+        erros = appendLine(erros, 'Soma das formas de pagamento é divergente do total')
+      } else {
+        updateNota.totalNota = totalNota
+        updateNota.totalProduto = new Prisma.Decimal(parseFloat(totalProdutos?.toFixed(2)))
 
-  if (+nota.frete < 0) erros = appendLine(erros, 'O frete deve ser informado de forma numérica maior ou igual a zero!')
-
-  if (+nota.frete < 0) erros = appendLine(erros, 'O seguro deve ser informado de forma numérica maior ou igual a zero!')
-
-  if (+nota.outrasDespesas < 0)
-    erros = appendLine(erros, 'As outras despesas devem ser informadas de forma numérica maior ou igual a zero!')
-
-  if (+nota.freteOutros < 0)
-    erros = appendLine(erros, 'O frete outros deve ser informado de forma numérica maior ou igual a zero!!')
-
-  if (+nota.desconto < 0) erros = appendLine(erros, 'desconto não deve ser informado de forma negativa!')
-
-  updateNota.totalDinheiro = nota.totalDinheiro
-  updateNota.totalCheque = nota.totalCheque
-  updateNota.totalCartaoCredito = nota.totalCartaoCredito
-  updateNota.totalCartaoDebito = nota.totalCartaoDebito
-  updateNota.totalOutros = nota.totalOutros
-
-  const totalPagamentos =
-    updateNota.totalDinheiro +
-    updateNota.totalCheque +
-    updateNota.totalCartaoDebito +
-    updateNota.totalCartaoCredito +
-    updateNota.TotalBoleto +
-    updateNota.totalOutros
-
-  if (Math.abs(totalNota - totalPagamentos) > 0.001) {
-    erros = appendLine(erros, 'Soma das formas de pagamento é divergente do total')
-  } else {
-    updateNota.totalNota = parseFloat('' + totalNota)
-    updateNota.totalProduto = parseFloat(totalProdutos.toFixed(2))
-    updateNota.status = 'Validado'
-    updateNota.qtdePagina = parseFloat((produtos.length / 19 + 1).toFixed(0))
-    updateNota.qtdeItens = +items
-    updateNota.qtdeProdutos = produtos.length
-    updateNota.baseICMS = 0
-    updateNota.valorICMS = 0
-    updateNota.valorTributo = 0
-  }
-  if (!nota.dataSaida) updateNota.dataSaida = addMinutes(nota.data, 30)
-
-  let operacaoNFe = OperacaoNFe.Mesmoestado
-
-  if (nota.estado !== 'EX' && nota.estado !== parameters.nfeUf) {
-    operacaoNFe = OperacaoNFe.Interestadual
-  } else if (nota.estado === 'EX') {
-    operacaoNFe = OperacaoNFe.Internacional
-  }
-
-  updateNota.pesoBruto = 0
-  updateNota.pesoLiquido = 0
-  // let totalProdArred = 0
-  for (const produto of produtos) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updateProduto: any = {}
-    const stProduto = await taxSituationsRepository.findById(produto.stNfe)
-
-    /* a Integrado que ira mandar o cfop corretamente
-      if (
-        operacaoNFe === OperacaoNFe.Interestadual &&
-        nota.tipo === 'SAIDA' &&
-        produto.cfop === '6.102'
-      ) {
-        if (
-          nota.CPF_CNPJ.length > 11 &&
-          (nota.RG_IE || '').toLowerCase().startsWith('isent')
-        )
-          updateProduto.cfop = '6.108'
-        else if (nota.CPF_CNPJ.length <= 11) updateProduto.cfop = '6.108'
-        else updateProduto.cfop = cfopChange(produto.cfop, nota.tipo, operacaoNFe)
-      } else updateProduto.cfop = cfopChange(produto.cfop, nota.tipo, operacaoNFe) */
-
-    updateProduto.cfop = cfopChange(produto.cfop, nota.tipo, operacaoNFe)
-    if (!stProduto) {
-      erros = appendLine(erros, 'Verifique a tributação dos produtos!')
-      break
-    } else {
-      const totalProd = +(produto.unitario * produto.quantidade)
-      // updateProduto.unitario = produto.unitario.toFixed(2)
-      // totalProdArred =
-      //  totalProdArred + parseFloat((produto.unitario * produto.quantidade).toFixed(2))
-      const aliquotaBaseTributo = await getAliquotaTributo(produto.ncm)
-      if (totalProd === 0 && !nota.complementar) erros = appendLine(erros, 'Produto com valor zerado!')
-      updateProduto.aliquotaICMS = stProduto.aliquotaIcms
-      updateProduto.baseICMS = totalProd
-      updateProduto.valorICMS = (totalProd * produto.aliquotaICMS) / 100
-      updateProduto.st = stProduto.cst
-      updateProduto.cf = 0
-      updateProduto.baseTributo = +((aliquotaBaseTributo * totalProd) / 100).toFixed(2)
-      if (produto.st === 500 || produto.st === 6 || produto.st === 60)
-        updateProduto.cest = await getCESTByNCM(produto.ncm)
-
-      updateNota.baseICMS += updateProduto.baseICMS
-      updateNota.valorICMS += updateProduto.valorICMS
-      updateNota.valorTributo += updateProduto.baseTributo
+        updateNota.qtdePagina = parseFloat((produtos.length / 19 + 1)?.toFixed(0))
+        updateNota.qtdeItens = +items
+        updateNota.qtdeProdutos = produtos.length
+        updateNota.baseICMS = new Prisma.Decimal(0)
+        updateNota.valorICMS = new Prisma.Decimal(0)
+        updateNota.valorTributo = new Prisma.Decimal(0)
+      }
     }
-    console.log(updateNota)
-    console.log(updateProduto)
-    await nfeProductsRepository.update({ ...updateProduto, id: produto.id })
-  }
-  if (erros) {
-    updateNota.erros = erros
-    updateNota.status = 'Erro'
-  }
+    if (!nota.dataSaida) updateNota.dataSaida = addMinutes(nota.data, 30)
 
-  if (!nota.dataOrigem) updateNota.dataOrigem = nota.data
-  await nfeRepository.update({ id: nota.id, ...updateNota })
+    updateNota.pesoBruto = nota.pesoBruto
+    updateNota.pesoLiquido = nota.pesoBruto
+    await Promise.all(
+      produtos.map(async reg => {
+        if (reg) {
+          const updateProduto: NfeProducts = reg
+
+          const totalProd = reg.unitario?.times(reg.quantidade || 0) || 0
+
+          const auxNaturezaOP = nota.naturezaOp?.toUpperCase()
+          if (!reg.ncm) {
+            erros = appendLine(erros, 'Produto sem NCM!')
+          }
+          const aliquotaBaseTributo = auxNaturezaOP?.includes('VENDA') ? await getAliquotaTributo(reg.ncm) : 0
+          if (totalProd === 0 && !nota.complementar) erros = appendLine(erros, 'Produto com valor zerado!')
+          if ((reg?.cfop || '') === '') {
+            const St = await productTaxRepository.findByUf(reg.produto || '', nota.estado || 'SP')
+            if (!St) {
+              erros = appendLine(erros, 'Verifique a tributação dos produtos!')
+            } else {
+              updateProduto.aliquotaICMS = new Prisma.Decimal((St.simplesNacional ? 0 : St.aliquotaIcms) || 0)
+              updateProduto.st = St.cst || 0
+              updateProduto.cfop = St.cfop
+              updateProduto.cstPis = St.cstPis
+              updateProduto.alqPis = new Prisma.Decimal(St.alqPis || 0)
+              updateProduto.cstCofins = St.cstCofins
+              updateProduto.alqCofins = new Prisma.Decimal(St.alqCofins || 0)
+              updateProduto.ipi = new Prisma.Decimal(St.ipi || 0)
+              updateProduto.uf = St.uf
+              updateProduto.baseICMS = new Prisma.Decimal(
+                St.baseIcms ? (St.baseIcms === new Prisma.Decimal(0) ? 100 : St.baseIcms) : 100,
+              )
+              updateProduto.baseIcmsSt = new Prisma.Decimal(
+                St.baseIcmsSt ? (St.baseIcmsSt === new Prisma.Decimal(0) ? 100 : St.baseIcmsSt) : 100,
+              )
+              updateProduto.valorICMS = new Prisma.Decimal(
+                new Prisma.Decimal(totalProd).times(updateProduto.aliquotaICMS).div(100),
+              )
+              updateProduto.valorBaseIcms = new Prisma.Decimal(
+                new Prisma.Decimal(totalProd).times(updateProduto.baseICMS).div(100),
+              )
+              updateProduto.valorBaseIcmsSt = new Prisma.Decimal(
+                new Prisma.Decimal(totalProd).times(updateProduto.baseIcmsSt).div(100),
+              )
+            }
+          } else {
+            updateProduto.aliquotaICMS = new Prisma.Decimal(reg.aliquotaICMS || 100)
+            updateProduto.baseICMS = new Prisma.Decimal(
+              reg.baseICMS ? (reg.baseICMS === new Prisma.Decimal(0) ? 100 : reg.baseICMS) : 100,
+            )
+            updateProduto.baseIcmsSt = new Prisma.Decimal(
+              reg.baseIcmsSt ? (reg.baseIcmsSt === new Prisma.Decimal(0) ? 100 : reg.baseIcmsSt) : 100,
+            )
+
+            updateProduto.valorBaseIcms = new Prisma.Decimal(
+              new Prisma.Decimal(totalProd).times(updateProduto.baseICMS).div(100),
+            )
+            updateProduto.valorBaseIcmsSt = new Prisma.Decimal(
+              new Prisma.Decimal(totalProd).times(updateProduto.baseIcmsSt).div(100),
+            )
+            updateProduto.valorICMS = new Prisma.Decimal(
+              new Prisma.Decimal(totalProd).times(updateProduto.aliquotaICMS).div(100),
+            )
+          }
+
+          updateProduto.baseTributo = new Prisma.Decimal(totalProd).times(aliquotaBaseTributo).div(100)
+          if (reg.st === 500 || reg.st === 6 || reg.st === 60) updateProduto.cest = await getCESTByNCM(reg.ncm || '')
+          updateNota.baseICMS = updateNota.baseICMS.add(updateProduto.valorBaseIcms || 0)
+          updateNota.valorICMS = updateNota.valorICMS?.add(updateProduto.valorICMS || 0)
+          updateNota.valorTributo = updateNota.valorTributo?.add(updateProduto.baseTributo)
+
+          await nfeProductsRepository.update(reg.id, { ...updateProduto, id: reg.id }, prismaTransaction)
+        }
+      }),
+    )
+    updateNota.status = 'Validado'
+
+    if (erros) {
+      updateNota.erros = erros
+      updateNota.status = 'Erro'
+    } else updateNota.erros = ''
+    if (!nota.dataOrigem) updateNota.dataOrigem = nota.data
+    await nfeRepository.update(nota.id, { id: nota.id, ...updateNota }, prismaTransaction)
+  }
 }

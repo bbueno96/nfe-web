@@ -30,7 +30,7 @@ export class UpdateTaxSituationUseCase {
     await this.taxSituationsRepository.update({
       ...data,
       aliquotaIcms: new Prisma.Decimal(data.aliquotaIcms),
-      baseIcms: new Prisma.Decimal(data.baseIcms),
+      baseIcms: new Prisma.Decimal(data.baseIcms || 0),
       aliquotaIcmsSt: new Prisma.Decimal(data.aliquotaIcmsSt || 0),
       baseIcmsSt: new Prisma.Decimal(data.baseIcmsSt || 0),
       mva: new Prisma.Decimal(data.baseIcms || 0),

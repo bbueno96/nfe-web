@@ -1,5 +1,3 @@
-import { Prisma } from '@prisma/client'
-
 import { GroupRepository } from '../../repositories/GroupRepository'
 import { ApiError } from '../../utils/ApiError'
 import { IUpdateGroupDTO } from './UpdateGroupDTO'
@@ -26,8 +24,7 @@ export class UpdateGroupUseCase {
 
     this.sanitizeData(data)
     this.validate(data)
-
-    await this.brandRepository.update({
+    await this.brandRepository.update(oldData.id, {
       ...data,
     })
   }

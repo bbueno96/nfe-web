@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid'
+
 import { Prisma } from '@prisma/client'
 
 class AccountPayable {
@@ -11,81 +13,29 @@ class AccountPayable {
   numberInstallment: number
   installments: number
   providerId: string
-  document: string
+  document?: string | null
   classificationId: string
-  disabledAt?: Date
-  accountPaymentId?: string
-  providerName?: string
-  companyId?: string
+  disabledAt?: Date | null
+  accountPaymentId?: string | null
+  providerName?: string | null
+  companyId?: string | null
 
-  private constructor({
-    createdAt,
-    description,
-    dueDate,
-    value,
-    discount,
-    addition,
-    numberInstallment,
-    installments,
-    providerId,
-    document,
-    classificationId,
-    accountPaymentId,
-    providerName,
-    companyId,
-  }: AccountPayable) {
-    return Object.assign(this, {
-      createdAt,
-      description,
-      dueDate,
-      value,
-      discount,
-      addition,
-      numberInstallment,
-      installments,
-      providerId,
-      document,
-      classificationId,
-      accountPaymentId,
-      providerName,
-      companyId,
-    })
-  }
-
-  static create({
-    createdAt,
-    description,
-    dueDate,
-    value,
-    discount,
-    addition,
-    numberInstallment,
-    installments,
-    providerId,
-    document,
-    classificationId,
-    accountPaymentId,
-    providerName,
-    companyId,
-  }: AccountPayable) {
-    const accountPayable = new AccountPayable({
-      createdAt,
-      description,
-      dueDate,
-      value,
-      discount,
-      addition,
-      numberInstallment,
-      installments,
-      providerId,
-      document,
-      classificationId,
-      accountPaymentId,
-      providerName,
-      companyId,
-    })
-
-    return accountPayable
+  constructor(props: Omit<AccountPayable, 'id'>, id?: string) {
+    this.id = id || uuidv4()
+    this.createdAt = props.createdAt
+    this.description = props.description
+    this.dueDate = props.dueDate
+    this.value = props.value
+    this.discount = props.discount
+    this.addition = props.addition
+    this.numberInstallment = props.numberInstallment
+    this.installments = props.installments
+    this.providerId = props.providerId
+    this.document = props.document
+    this.classificationId = props.classificationId
+    this.accountPaymentId = props.accountPaymentId
+    this.providerName = props.providerName
+    this.companyId = props.companyId
   }
 }
 

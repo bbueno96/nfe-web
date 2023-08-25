@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client'
 
-import { AccountPayable } from '../../entities/AccountPayable'
+import { PrismaTransaction } from '../../../prisma/types'
 import { AccountPayableRepository } from '../../repositories/AccountPayableRepository'
 import { ApiError } from '../../utils/ApiError'
 import { ICreateAccountPayableDTO } from './CreateAccountPayableDTO'
@@ -18,41 +18,45 @@ export class CreateAccountPayableUseCase {
     }
   }
 
-  async execute(data: ICreateAccountPayableDTO) {
+  async execute(data: ICreateAccountPayableDTO, prismaTransaction: PrismaTransaction) {
     this.sanitizeData(data)
     await this.validate(data)
 
     if (data.subAccounts.length === 0) {
       const accountPayable = await this.accountPayableRepository.create(
-        AccountPayable.create({
+        {
           ...data,
           providerName: data.providerName,
           value: new Prisma.Decimal(data.value),
           discount: new Prisma.Decimal(data.discount),
           addition: new Prisma.Decimal(data.addition),
-        }),
+        },
+        prismaTransaction,
       )
       return accountPayable
     }
     const { description, installments, providerId, document, classificationId, companyId, providerName } = data
-    data.subAccounts.forEach(async account => {
-      await this.accountPayableRepository.create(
-        AccountPayable.create({
-          ...account,
-          description: `${description} (${`00${account.numberInstallment}`.slice(-2)}/${`00${installments}`.slice(
-            -2,
-          )})`,
-          installments,
-          providerId,
-          document,
-          providerName,
-          classificationId,
-          value: new Prisma.Decimal(account.value),
-          discount: new Prisma.Decimal(0),
-          addition: new Prisma.Decimal(0),
-          companyId,
-        }),
-      )
-    })
+    await Promise.all(
+      data.subAccounts.map(async account => {
+        await this.accountPayableRepository.create(
+          {
+            ...account,
+            description: `${description} (${`00${account.numberInstallment}`.slice(-2)}/${`00${installments}`.slice(
+              -2,
+            )})`,
+            installments,
+            providerId,
+            document,
+            providerName,
+            classificationId,
+            value: new Prisma.Decimal(account.value),
+            discount: new Prisma.Decimal(0),
+            addition: new Prisma.Decimal(0),
+            companyId,
+          },
+          prismaTransaction,
+        )
+      }),
+    )
   }
 }

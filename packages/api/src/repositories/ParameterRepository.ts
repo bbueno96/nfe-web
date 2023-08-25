@@ -1,22 +1,24 @@
+import { PrismaTransaction } from '../../prisma/types'
 import { prisma } from '../database/client'
 import { Parameter } from '../entities/Parameter'
 
 export class ParameterRepository {
-  async getParameter(companyId: string): Promise<Parameter> {
-    return await prisma.parameter.findFirst({
+  getParameter(companyId: string) {
+    return prisma.parameter.findFirst({
       where: { companyId },
     })
   }
 
-  async update(data: Parameter): Promise<Parameter> {
-    return await prisma.parameter.update({
-      where: { id: data.id },
+  update(id: string, data: Partial<Parameter>, prismaTransaction: PrismaTransaction | null) {
+    const connection = prismaTransaction ?? prisma
+    return connection.parameter.update({
+      where: { id },
       data,
     })
   }
 
-  async lastNumeroNota(companyId: string, serie: number): Promise<any> {
-    return await prisma.nfe.findFirst({
+  lastNumeroNota(companyId: string, serie: number) {
+    return prisma.nfe.findFirst({
       where: { companyId, serie },
       orderBy: {
         numeroNota: 'desc',
@@ -27,8 +29,8 @@ export class ParameterRepository {
     })
   }
 
-  async lastBudget(companyId: string): Promise<any> {
-    return await prisma.budget.findFirst({
+  lastBudget(companyId: string) {
+    return prisma.budget.findFirst({
       where: { companyId },
       orderBy: {
         numberBudget: 'desc',
@@ -39,7 +41,7 @@ export class ParameterRepository {
     })
   }
 
-  async lastOrder(companyId: string): Promise<any> {
+  async lastOrder(companyId: string) {
     return await prisma.order.findFirst({
       where: { companyId },
       orderBy: {

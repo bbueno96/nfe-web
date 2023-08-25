@@ -22,17 +22,19 @@ export class UpdateAdminUseCase {
   }
 
   async execute(data: IUpdateAdminDTO) {
-    const prod = await this.adminRepository.findById(data.id)
-    if (!prod) {
-      throw new ApiError('Usuario não encontrado.', 404)
+    if (data.id) {
+      const reg = await this.adminRepository.findById(data.id)
+      if (!reg) {
+        throw new ApiError('Usuario não encontrado.', 404)
+      }
+      this.sanitizeData(data)
+      await this.validate(data)
+
+      const admin = await this.adminRepository.update(reg.id, {
+        ...data,
+      })
+
+      return admin.id
     }
-    this.sanitizeData(data)
-    await this.validate(data)
-
-    const admin = await this.adminRepository.update({
-      ...data,
-    })
-
-    return admin.id
   }
 }

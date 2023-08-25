@@ -5,25 +5,25 @@ import { TaxSituation } from '../entities/TaxSituation'
 import { IListTaxSituationFilters } from '../useCases/ListTaxSituation/ListTaxSituationDTO'
 
 export class TaxSituationsRepository {
-  async update(data: TaxSituation): Promise<TaxSituation> {
-    return await prisma.taxSituation.update({
+  update(data: TaxSituation) {
+    return prisma.taxSituation.update({
       where: { id: data.id },
       data,
     })
   }
 
-  async create(data: TaxSituation): Promise<TaxSituation> {
-    return await prisma.taxSituation.create({ data })
+  create(data: TaxSituation) {
+    return prisma.taxSituation.create({ data })
   }
 
-  async findById(id: string): Promise<TaxSituation> {
-    return await prisma.taxSituation.findUnique({
+  findById(id: string) {
+    return prisma.taxSituation.findUnique({
       where: { id },
     })
   }
 
-  async findByProvider(aliquotaIcms: number, cst: number, company: string): Promise<TaxSituation> {
-    return await prisma.taxSituation.findFirst({
+  findByProvider(aliquotaIcms: number, cst: number, company: string) {
+    return prisma.taxSituation.findFirst({
       where: { aliquotaIcms, cst, companyId: company },
     })
   }
@@ -47,13 +47,12 @@ export class TaxSituationsRepository {
 
   async listPost(filters: IListTaxSituationFilters): Promise<List<TaxSituation>> {
     const { companyId, description, page, perPage, orderBy } = filters
-    console.log(companyId)
     const items = await prisma.taxSituation.findMany({
       where: {
         description: { contains: description, mode: 'insensitive' },
         companyId,
       },
-      skip: Number((page - 1) * perPage) || undefined,
+      skip: ((page ?? 1) - 1) * (perPage ?? 10),
       take: perPage,
       orderBy: {
         description: orderBy as Prisma.SortOrder,
@@ -71,21 +70,21 @@ export class TaxSituationsRepository {
       items,
       pager: {
         records,
-        page,
-        perPage,
+        page: page ?? 1,
+        perPage: perPage ?? 10,
         pages: perPage ? Math.ceil(records / perPage) : 1,
       },
     }
   }
 
-  async findIbptByNcm(NCM: string): Promise<any> {
-    return await prisma.ibpt.findFirst({
+  findIbptByNcm(NCM: string) {
+    return prisma.ibpt.findFirst({
       where: { NCM_NBS: NCM },
     })
   }
 
-  async findCestByNcm(NCM: string): Promise<any> {
-    return await prisma.cest.findFirst({
+  findCestByNcm(NCM: string) {
+    return prisma.cest.findFirst({
       where: { NCM },
     })
   }

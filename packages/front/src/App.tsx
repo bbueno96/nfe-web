@@ -15,7 +15,8 @@ export interface ModalState {
   title?: string
   message?: string
   value?: string
-  callback?: (value: string | boolean) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  callback?: (value: any) => void
   show: boolean
 }
 
@@ -28,13 +29,17 @@ interface Operator {
   name?: string
   roles?: string[]
 }
+interface AdminLoginValues {
+  login: string
+  password: string
+}
 interface AppContext {
   operator: Operator
   token: string
   saOperator: Operator
   saToken: string
   parameter: Parameter
-  saSignIn: (values: unknown) => Promise<void>
+  saSignIn: (values: AdminLoginValues) => Promise<void>
   saSignOut: () => void
   modal: {
     alert: (message: string, callback?: VoidFunction) => void
@@ -43,8 +48,18 @@ interface AppContext {
   }
 }
 
-const AppContext = createContext<Partial<AppContext>>({})
-
+const initialOperator = {} as Operator
+const initialParameter = {} as Parameter
+const AppContext = createContext<AppContext>({
+  token: '',
+  saSignIn: () => Promise.resolve(),
+  saSignOut: () => undefined,
+  modal: { alert: () => undefined, confirm: () => undefined, prompt: () => undefined },
+  operator: initialOperator,
+  saOperator: initialOperator,
+  parameter: initialParameter,
+  saToken: '',
+})
 export function useApp() {
   return useContext(AppContext)
 }
@@ -56,7 +71,7 @@ export function AppProvider({ children }) {
   const [saOperator, setSaOperator] = useLocalStorage<Operator>(`sa_${appConfig.OPERATOR_KEY}`, {})
   const [parameter, setParameter] = useLocalStorage<Parameter>(`parameter`, { getApoio: false })
   const [saToken, setSaToken] = useLocalStorage(`sa_${appConfig.TOKEN_KEY}`, '')
-  const [saTokenExpires, setSaTokenExpires] = useLocalStorage(`sa_${appConfig.TOKEN_KEY}_expiresAt`, null)
+  const [saTokenExpires, setSaTokenExpires] = useLocalStorage<Date | null>(`sa_${appConfig.TOKEN_KEY}_expiresAt`, null)
 
   const [modal, setModal] = useState<ModalState>({ show: false })
   const modalActions = useMemo(
@@ -74,11 +89,9 @@ export function AppProvider({ children }) {
   const saSignIn = useCallback(
     async values => {
       const { data } = await service.post('/login.admin', values)
-
       setSaTokenExpires(addHours(new Date(), 20))
       setSaOperator({ ...data.user, roles: data.user.isTest ? ['Admin', 'AdminTest'] : ['Admin'] })
       setSaToken(data.accessToken)
-
       const { data: parameters } = await service.post(
         '/parameter.get',
         {},
@@ -98,7 +111,9 @@ export function AppProvider({ children }) {
 
   useInterval(
     () => {
-      if (!isAfter(new Date(saTokenExpires), new Date())) {
+      const isSaTokenExpired = (saTokenExpires && !isAfter(new Date(saTokenExpires), new Date())) || !saTokenExpires
+
+      if (isSaTokenExpired) {
         saSignOut()
       }
     },

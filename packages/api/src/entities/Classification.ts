@@ -1,11 +1,11 @@
 class Classification {
   id?: string
-  description: string
-  code: string
+  description?: string | null
+  code?: string | null
   isGroup: boolean
-  parentId?: string
-  disabledAt?: Date
-  companyId?: string
+  parentId?: string | null
+  disabledAt?: Date | null
+  companyId?: string | null
 
   private constructor({ description, code, isGroup, companyId }: Classification) {
     return Object.assign(this, {

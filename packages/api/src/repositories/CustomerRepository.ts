@@ -10,25 +10,25 @@ export class CustomerRepository {
     return count > 0
   }
 
-  async update(data: Customer): Promise<Customer> {
-    return await prisma.customer.update({
-      where: { id: data.id },
+  update(id: string, data: Partial<Customer>) {
+    return prisma.customer.update({
+      where: { id },
       data,
     })
   }
 
-  async create(data: Customer): Promise<Customer> {
-    return await prisma.customer.create({ data })
+  create(data: Customer) {
+    return prisma.customer.create({ data })
   }
 
-  async findById(id: string): Promise<Customer> {
-    return await prisma.customer.findUnique({
+  findById(id: string) {
+    return prisma.customer.findUnique({
       where: { id },
     })
   }
 
-  async findByName(name: string): Promise<Customer> {
-    return await prisma.customer.findFirst({
+  findByName(name: string) {
+    return prisma.customer.findFirst({
       where: { name },
     })
   }
@@ -62,7 +62,7 @@ export class CustomerRepository {
 
     const items = await prisma.customer.findMany({
       where,
-      skip: Number((page - 1) * perPage) || undefined,
+      skip: ((page ?? 1) - 1) * (perPage ?? 10),
       take: perPage,
       orderBy: {
         dateCreated: orderBy as Prisma.SortOrder,
@@ -77,8 +77,8 @@ export class CustomerRepository {
       items,
       pager: {
         records,
-        page,
-        perPage,
+        page: page ?? 1,
+        perPage: perPage ?? 10,
         pages: perPage ? Math.ceil(records / perPage) : 1,
       },
     }

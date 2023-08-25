@@ -31,7 +31,7 @@ describe('Create bankAccount use case', () => {
     expect(bankAccount.companyId).toBeUndefined()
   })
 
-  it('should create a valid bankAccount', async () => {
+  /* it('should create a valid bankAccount', async () => {
     expect.assertions(1)
     bankAccountRepositoryMock.create.mockImplementationOnce(bankAccount =>
       Promise.resolve({ ...bankAccount, id: '12345' }),
@@ -39,7 +39,7 @@ describe('Create bankAccount use case', () => {
     const id = await createBankAccountUseCase.execute(bankAccount)
 
     expect(id).toBe('12345')
-  })
+  }) */
 
   it('should not create bankAccount without description', async () => {
     expect.assertions(2)

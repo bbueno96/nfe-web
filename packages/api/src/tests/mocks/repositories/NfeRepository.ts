@@ -8,5 +8,7 @@ export const nfeRepositoryMock: jest.Mocked<NfeRepository> = {
   remove: jest.fn(),
   getXmlNota: jest.fn(),
   createNfeStorage: jest.fn(),
+  findNumeroNota: jest.fn(),
   findByIdP: jest.fn(),
+  findByIdProducts: jest.fn(),
 }

@@ -5,21 +5,20 @@ import { PayMethod } from '../entities/PayMethod'
 import { IListPayMethodFilters } from '../useCases/ListPayMethod/ListPayMethodDTO'
 
 export class PayMethodsRepository {
-  async update(data: PayMethod): Promise<PayMethod> {
-    return await prisma.payMethod.update({
-      where: { id: data.id },
+  update(id: string, data: Partial<PayMethod>) {
+    return prisma.payMethod.update({
+      where: { id },
       data,
     })
   }
 
-  async create(data: PayMethod): Promise<PayMethod> {
-    return await prisma.payMethod.create({ data })
+  create(data: PayMethod) {
+    return prisma.payMethod.create({ data })
   }
 
-  async findById(id: string): Promise<any> {
-    return await prisma.payMethod.findUnique({
+  findById(id: string) {
+    return prisma.payMethod.findUnique({
       where: { id },
-      include: { BankAccount: true },
     })
   }
 
@@ -38,7 +37,7 @@ export class PayMethodsRepository {
         description: { contains: description, mode: 'insensitive' },
         companyId,
       },
-      skip: Number((page - 1) * perPage) || undefined,
+      skip: ((page ?? 1) - 1) * (perPage ?? 10),
       take: perPage,
       orderBy: {
         description: orderBy as Prisma.SortOrder,
@@ -56,21 +55,21 @@ export class PayMethodsRepository {
       items,
       pager: {
         records,
-        page,
-        perPage,
+        page: page ?? 1,
+        perPage: perPage ?? 10,
         pages: perPage ? Math.ceil(records / perPage) : 1,
       },
     }
   }
 
-  async findIbptByNcm(NCM: string): Promise<any> {
-    return await prisma.ibpt.findFirst({
+  findIbptByNcm(NCM: string) {
+    return prisma.ibpt.findFirst({
       where: { NCM_NBS: NCM },
     })
   }
 
-  async findCestByNcm(NCM: string): Promise<any> {
-    return await prisma.cest.findFirst({
+  findCestByNcm(NCM: string) {
+    return prisma.cest.findFirst({
       where: { NCM },
     })
   }

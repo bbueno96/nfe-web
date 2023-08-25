@@ -1,20 +1,16 @@
 import { addMinutes } from 'date-fns'
 
-import { CustomerRepository } from '../../repositories/CustomerRepository'
+import { PrismaTransaction } from '../../../prisma/types'
+import { Nfe } from '../../entities/Nfe'
 import { NfeRepository } from '../../repositories/NfeRepository'
 import { ParameterRepository } from '../../repositories/ParameterRepository'
 import { ApiError } from '../../utils/ApiError'
-import { formatPhone } from '../../utils/formatPhone'
 import { check } from '../../utils/nfe/check'
 import { sendNFe } from '../../utils/nfe/send'
 import { ISendAuthNfeDTO } from './SendAuthNfeDTO'
 
 export class SendAuthNfeUseCase {
-  constructor(
-    private nfeRepository: NfeRepository,
-    private customerRepository: CustomerRepository,
-    private parameterRepository: ParameterRepository,
-  ) {}
+  constructor(private nfeRepository: NfeRepository, private parameterRepository: ParameterRepository) {}
 
   validate(data) {
     if (data.status !== 'Validado') {
@@ -22,13 +18,19 @@ export class SendAuthNfeUseCase {
     }
   }
 
-  async execute(data: ISendAuthNfeDTO) {
+  async execute(data: ISendAuthNfeDTO, prismaTransaction: PrismaTransaction) {
     const parameter = await this.parameterRepository.getParameter(data.companyId)
-    const nfe = await this.nfeRepository.findById(data.id)
+    if (!parameter) {
+      throw new ApiError('Nenhuma configuração encontrada.', 404)
+    }
+    const nfe = await this.nfeRepository.findById(data.id || '')
+    if (!nfe) {
+      throw new ApiError('Nenhuma nota encontrada.', 404)
+    }
     await this.validate(nfe)
 
     let totalProdutos = 0
-    const updateNota: any = {}
+    const updateNota: Nfe = nfe
     updateNota.chave = nfe.chave || null
     updateNota.dataSaida = addMinutes(new Date(), 60)
     updateNota.processado = true
@@ -39,17 +41,21 @@ export class SendAuthNfeUseCase {
 
         updateNota.observacoes = observacoes
 
-        const nota = await this.nfeRepository.update({ id: nfe.id, ...updateNota })
+        const nota = await this.nfeRepository.update(nfe.id, { id: nfe.id, ...updateNota }, prismaTransaction)
         const recibo = await sendNFe(nota.id, parameter)
         const retorno = await check(recibo, parameter)
         return retorno
       }
     } else {
-      await this.nfeRepository.update({
-        ...nfe,
-        status: 'erro',
-        erros: 'Tamanho Arquivo excedeu 500kB. Faça notas máximo 500 itens.',
-      })
+      await this.nfeRepository.update(
+        nfe?.id,
+        {
+          ...nfe,
+          status: 'erro',
+          erros: 'Tamanho Arquivo excedeu 500kB. Faça notas máximo 500 itens.',
+        },
+        prismaTransaction,
+      )
     }
   }
 }

@@ -3,9 +3,9 @@ import { NfeProductsRepository } from '../../repositories/NfeProductsRepository'
 import { NfeRepository } from '../../repositories/NfeRepository'
 import { ParameterRepository } from '../../repositories/ParameterRepository'
 import { ProductRepository } from '../../repositories/ProductRepository'
+import { ProductTaxRepository } from '../../repositories/ProductTaxRepository'
 import { ProviderRepository } from '../../repositories/ProviderRepository'
 import { StockProductsRepository } from '../../repositories/StockProductsRepository'
-import { TaxSituationsRepository } from '../../repositories/TaxSituationsRepository'
 import { CreateNfeInputController } from './CreateNfeInputController'
 import { CreateNfeInputUseCase } from './CreateNfeInputUseCase'
 
@@ -14,7 +14,7 @@ const providerRepository = new ProviderRepository()
 const nfeProductsRepository = new NfeProductsRepository()
 const parameterRepository = new ParameterRepository()
 const productRepository = new ProductRepository()
-const taxSituationsRepository = new TaxSituationsRepository()
+const productTaxRepository = new ProductTaxRepository()
 const accountPayableRepository = new AccountPayableRepository()
 const stockProductsRepository = new StockProductsRepository()
 
@@ -23,7 +23,7 @@ const createNfeInputUseCase = new CreateNfeInputUseCase(
   providerRepository,
   productRepository,
   nfeProductsRepository,
-  taxSituationsRepository,
+  productTaxRepository,
   parameterRepository,
   accountPayableRepository,
   stockProductsRepository,

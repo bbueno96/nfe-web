@@ -6,8 +6,10 @@ import { BudgetProductsRepository } from '../../repositories/BudgetProductsRepos
 import { BudgetRepository } from '../../repositories/BudgetRepository'
 import { ParameterRepository } from '../../repositories/ParameterRepository'
 import { ApiError } from '../../utils/ApiError'
+import { PaymentMean } from '../../utils/constants'
 import { createInstallments } from '../../utils/Installments/installments'
 import { maskCpfCnpj, maskDecimal, maskCellPhone } from '../../utils/mask'
+
 export class GetBudgetPdfUseCase {
   constructor(
     private budgetRepository: BudgetRepository,
@@ -20,11 +22,12 @@ export class GetBudgetPdfUseCase {
     if (!budget) {
       throw new ApiError('Orçamento não encontrado.', 404)
     }
-    const parameters = await this.parameterRepository.getParameter(budget.companyId)
+    const parameters = await this.parameterRepository.getParameter(budget?.companyId || '')
     const { Admin, PayMethod } = budget
-    let { Customer } = budget
-    if (parameters.getApoio) {
-      Customer = {
+    const { Customer } = budget
+    let CustomerApoio
+    if (parameters?.getApoio) {
+      CustomerApoio = {
         name: budget.customerApoioName,
         cpfCnpj: budget.cpfCnpjApoio,
         stateInscription: budget.stateInscriptionApoio,
@@ -38,12 +41,11 @@ export class GetBudgetPdfUseCase {
         phone: budget.phoneApoio,
       }
     }
-    let installments = null
+    let installments
     const products = await this.BudgetProductsRepository.findByBudget(budget.id)
-    if (PayMethod) installments = createInstallments(PayMethod, budget, budget.companyId)
-
+    if (budget.installments) installments = createInstallments(budget, budget.companyId)
     const report = await ejs.renderFile(`${__dirname}/../../reports/budget.ejs`, {
-      customer: Customer,
+      customer: CustomerApoio || Customer,
       products,
       budget,
       parameters,
@@ -55,6 +57,7 @@ export class GetBudgetPdfUseCase {
       maskCellPhone,
       PayMethod,
       installments,
+      PaymentMean,
     })
     return report
   }

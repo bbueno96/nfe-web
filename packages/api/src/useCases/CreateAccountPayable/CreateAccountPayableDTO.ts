@@ -1,3 +1,5 @@
+import { AccountPayable } from '../../entities/AccountPayable'
+
 export interface ICreateAccountPayableDTO {
   createdAt: Date
   description: string
@@ -10,7 +12,7 @@ export interface ICreateAccountPayableDTO {
   providerId: string
   document: string
   classificationId: string
-  subAccounts: any[]
+  subAccounts: AccountPayable[]
   providerName?: string
   companyId?: string
 }

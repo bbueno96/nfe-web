@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 
+import { prisma } from '../../prisma'
 import { CreateAccountPayableUseCase } from './CreateAccountPayableUseCase'
 
 export class CreateAccountPayableController {
@@ -7,7 +8,7 @@ export class CreateAccountPayableController {
     this.handle = this.handle.bind(this)
   }
 
-  async handle(request: Request, response: Response) {
+  handle(request: Request, response: Response) {
     const {
       createdAt,
       description,
@@ -25,22 +26,27 @@ export class CreateAccountPayableController {
     } = request.body
     const { companyId } = request.user
 
-    const accountPayable = await this.CreateAccountPayableUseCase.execute({
-      createdAt,
-      description,
-      dueDate,
-      value,
-      discount,
-      addition,
-      numberInstallment,
-      installments,
-      providerId,
-      document,
-      classificationId,
-      subAccounts,
-      providerName,
-      companyId,
+    return prisma.$transaction(async prismaTransaction => {
+      const accountPayable = await this.CreateAccountPayableUseCase.execute(
+        {
+          createdAt,
+          description,
+          dueDate,
+          value,
+          discount,
+          addition,
+          numberInstallment,
+          installments,
+          providerId,
+          document,
+          classificationId,
+          subAccounts,
+          providerName,
+          companyId,
+        },
+        prismaTransaction,
+      )
+      return response.status(201).json({ accountPayable })
     })
-    return response.status(201).json({ accountPayable })
   }
 }

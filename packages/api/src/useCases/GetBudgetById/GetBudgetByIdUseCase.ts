@@ -7,12 +7,9 @@ export class GetBudgetByIdUseCase {
 
   async execute(id: string) {
     const budget = await this.budgetRepository.findById(id)
-
     if (!budget) {
       throw new ApiError('Nenhum Orçamento Encontrado.', 404)
     }
-    const BudgetProducts = await this.budgetProductsRepository.findByBudget(budget.id)
-
-    return { ...budget, BudgetProducts }
+    return budget
   }
 }

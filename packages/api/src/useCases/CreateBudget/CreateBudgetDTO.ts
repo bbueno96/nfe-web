@@ -1,3 +1,6 @@
+import { BudgetProducts } from '../../entities/BudgetProducts'
+import { Customer } from '../../entities/Customer'
+
 export interface ICreateBudgetDTO {
   numberBudget: number
   createdAt: Date
@@ -10,8 +13,8 @@ export interface ICreateBudgetDTO {
   employeeId: string
   auth: boolean
   companyId: string
-  products: any[]
-  Customer?: any
+  products: BudgetProducts[]
+  Customer?: Customer
   obs?: string
   payMethodId?: string
   customerApoioId?: string
@@ -28,4 +31,9 @@ export interface ICreateBudgetDTO {
   cityApoio?: string
   stateApoio?: string
   cpfCnpjApoio?: string
+  installments?: string
+  paymentMean?: number
+  propertyId?: string
+  customerIdApoio?: number
+  customerApoioProperty?: string
 }

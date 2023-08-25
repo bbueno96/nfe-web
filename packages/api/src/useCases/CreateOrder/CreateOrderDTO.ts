@@ -1,3 +1,6 @@
+import { Customer } from '../../entities/Customer'
+import { OrderProducts } from '../../entities/OrderProducts'
+
 export interface ICreateOrderDTO {
   numberOrder: number
   createdAt: Date
@@ -8,11 +11,15 @@ export interface ICreateOrderDTO {
   shipping: number
   employeeId: string
   companyId: string
-  products: any[]
+  products: OrderProducts[]
   obs?: string
   payMethodId?: string
-  Customer?: any
+  Customer?: Customer
   budgetId?: string
   customerApoioId?: string
   customerApoioName?: string
+  installments?: string
+  paymentMean?: number
+  propertyId?: string
+  customerApoioProperty?: string
 }

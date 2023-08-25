@@ -6,7 +6,7 @@ import { exceptionHandler } from './exceptionHandler'
 const request = {} as Request
 const response = {} as Response
 const next = jest.fn()
-const error = new ApiError('', undefined)
+const error = new ApiError('', 422)
 
 response.status = jest.fn().mockImplementation(() => ({ json: jest.fn() }))
 

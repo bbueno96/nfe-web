@@ -17,11 +17,11 @@ export interface ListColumn<T> {
 }
 
 export interface ListPager {
-  page?: number
-  pages?: number
-  perPage?: number
-  records?: number
-  usePager?: boolean
+  page: number
+  pages: number
+  perPage: number
+  records: number
+  usePager: boolean
 }
 
 interface ListProps<T> {
@@ -88,7 +88,7 @@ export function List<T>({
                   })
 
                   return (
-                    <td key={`${col.title}-${col.path}`} style={col.style} className={className}>
+                    <td key={`${col.title}-${String(col.path)}`} style={col.style} className={className}>
                       <div>{col.format ? col.format(entity[col.path]) : entity[col.path]}</div>
                     </td>
                   )

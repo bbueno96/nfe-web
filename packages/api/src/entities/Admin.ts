@@ -4,32 +4,17 @@ class Admin {
   id?: string
   name: string
   login: string
-  password?: string
+  password?: string | null
   passwordHash: string
-  companyId?: string
+  companyId?: string | null
 
-  private constructor({ name, login, password, passwordHash, companyId }: Admin) {
-    return Object.assign(this, {
-      name,
-      login,
-      password,
-      passwordHash,
-      companyId,
-    })
-  }
-
-  static create({ name, login, password, passwordHash, companyId }: Admin) {
-    const admin = new Admin({
-      name,
-      login,
-      password,
-      passwordHash,
-      companyId,
-    })
-
-    admin.id = uuidv4()
-
-    return admin
+  constructor(props: Omit<Admin, 'id'>, id?: string) {
+    this.id = id || uuidv4()
+    this.name = props.name
+    this.login = props.login
+    this.password = props.password
+    this.passwordHash = props.passwordHash
+    this.companyId = props.companyId
   }
 }
 

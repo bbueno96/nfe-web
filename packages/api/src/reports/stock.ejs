@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Listagem Produtos</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter+Tight&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@700&display=swap');
+      body {
+        font-family: 'Inter Tight', sans-serif;
+        margin-left: 10px;
+        letter-spacing: 0.5px;
+        line-height: 20px;
+      }
+
+      html,
+      body {
+        height: 95%;
+      }
+
+      .itemHeader {
+        margin-left: 50px;
+        flex-direction: row;
+      }
+
+      .linha {
+        border-bottom: 1px solid black;
+        border-top: 1px solid black;
+        border-collapse: collapse;
+      }
+
+      footer {
+        display: block;
+      }
+
+      .linhaBottom {
+        border-bottom: 1px solid black;
+        border-collapse: collapse;
+      }
+
+      table {
+        width: 100%;
+      }
+
+      label {
+        font-weight: bold;
+      }
+
+      th {
+        text-align: left;
+      }
+
+      th,
+      td {
+        text-align: center;
+      }
+
+      .cabeçalho {
+        font-size: xx-small;
+
+        margin-top: 20px;
+        line-height: 10px;
+      }
+
+      .cabeçalhoOrçamento {
+        font-size: x-small;
+        font-weight: bold;
+        margin-bottom: 0;
+      }
+
+      .dadosCliente {
+        font-size: xx-small;
+        margin-bottom: 0;
+        text-align: left;
+      }
+
+      .center {
+        text-align: center;
+      }
+
+      .cabeçalhoProdutos {
+        font-size: 8px;
+        margin-bottom: 0;
+      }
+
+      .footerFormat {
+        font-size: small;
+        font-weight: bold;
+        margin-bottom: 0;
+      }
+
+      p {
+        font-size: xx-small;
+      }
+
+      .footer {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+      }
+
+      .pageContent {
+        min-height: 95%;
+        position: relative;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="pageContent" class="pageContent">
+      <div>
+        <table class="cabeçalho">
+          <tr>
+            <td rowspan="5">
+              <img src="https://nfe.sistemaexpert.com.br/static/media/apoio.9605470d9f9f04773c8c.png" width="100px" />
+            </td>
+          </tr>
+
+          <tr>
+            <td><strong><%=parameters.nfeRazao%></strong></td>
+          </tr>
+          <tr>
+            <td>
+              <%= parameters.nfeLagradouro.toUpperCase()%> - <%= parameters.nfeCidade.toUpperCase()%>-SP <%=
+              parameters.nfeCep%>
+            </td>
+          </tr>
+          <tr>
+            <td>CNPJ: <%= parameters.nfeCnpj%> - IE: <%= parameters.nfeIe%> - Fone: <%= parameters.nfeFone%></td>
+          </tr>
+          <tr>
+            <td><%= parameters.email%></td>
+          </tr>
+        </table>
+        <table class="cabeçalhoOrçamento linhaBottom">
+          <tr>
+            <th></th>
+            <th></th>
+            <th style="text-align: right"><%= format(printedAt, "dd/MM/yyyy" ) %></th>
+          </tr>
+        </table>
+
+        <table class="linha cabeçalhoProdutos">
+          <tr class="linha">
+            <th style="text-align: left">Código</th>
+            <th style="text-align: left">Cód.Barras</th>
+            <th colspan="2" style="text-align: left">Descrição</th>
+            <th style="text-align: justify">Estoque</th>
+            <th style="text-align: justify">Valor</th>
+          </tr>
+          <%products.forEach(product=> { %>
+          <tr>
+            <td style="text-align: left"><%= product.cod %></td>
+            <td style="text-align: left"><%= product.barCode %></td>
+            <td colspan="2" style="text-align: left"><%= product.description %></td>
+            <td style="text-align: right"><%= (product.stock || 0) %></td>
+            <td style="text-align: right">R$ <%= maskDecimal((product.value || 0).toFixed(2)) %></td>
+          </tr>
+          <% }) %>
+        </table>
+        <br />
+        <br />
+      </div>
+      <div>
+        <table class="footerFormat linhaBottom" style="font-weight: bold">
+          <tr>
+            <th style="width: 60%"></th>
+            <th></th>
+            <th></th>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="width: 15%">Total Qtde:</td>
+            <td style="width: 100%; text-align: right">
+              <%= totalQtde %>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="width: 15%">Total Valor:</td>
+            <td style="width: 100%; text-align: right">
+              R$ <%= maskDecimal(totalValue.toFixed(2)) %>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>

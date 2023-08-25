@@ -18,20 +18,26 @@ export class UpdateAccountPayableUseCase {
   }
 
   async execute(data: IUpdateAccountPayableDTO) {
-    const oldData = await this.accountPayableRepository.findById(data.id)
+    if (data.id) {
+      const oldData = await this.accountPayableRepository.findById(data.id)
 
-    if (!oldData) {
-      throw new ApiError('Conta a Pagar não encontrado.', 404)
+      if (!oldData) {
+        throw new ApiError('Conta a Pagar não encontrado.', 404)
+      }
+
+      this.sanitizeData(data)
+      this.validate(data)
+
+      await this.accountPayableRepository.update(
+        oldData.id,
+        {
+          ...data,
+          value: new Prisma.Decimal(data.value),
+          discount: new Prisma.Decimal(data.discount),
+          addition: new Prisma.Decimal(data.addition),
+        },
+        null,
+      )
     }
-
-    this.sanitizeData(data)
-    this.validate(data)
-
-    await this.accountPayableRepository.update({
-      ...data,
-      value: new Prisma.Decimal(data.value),
-      discount: new Prisma.Decimal(data.discount),
-      addition: new Prisma.Decimal(data.addition),
-    })
   }
 }

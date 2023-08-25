@@ -1,3 +1,6 @@
+import { AccountPayable } from '../../entities/AccountPayable'
+import { Customer } from '../../entities/Customer'
+
 export interface ICreateInstallmentDTO {
   numeroDoc: string
   customerId?: string
@@ -12,7 +15,7 @@ export interface ICreateInstallmentDTO {
   bankSlip?: boolean
   customerApoioId?: string
   installments?: number
-  subAccounts: any[]
+  subAccounts: AccountPayable[]
   customerApoioName?: string
   cpfCnpjApoio?: string
   phoneApoio: string
@@ -23,5 +26,5 @@ export interface ICreateInstallmentDTO {
   stateInscriptionApoio
   employeeId: string
   companyId?: string
-  Customer?: any
+  Customer?: Customer
 }

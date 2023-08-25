@@ -1,3 +1,5 @@
+import { AccountPayment } from '../../entities/AccountPayment'
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface ICreateAccountPaymentDTO {
   createdAt: Date
@@ -5,5 +7,5 @@ export interface ICreateAccountPaymentDTO {
   paymentMeanId: number
   bankAccountId: string
   companyId?: string
-  accountsSelected: any[]
+  accountsSelected: AccountPayment[]
 }

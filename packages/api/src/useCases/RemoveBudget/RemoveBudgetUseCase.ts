@@ -10,10 +10,10 @@ export class RemoveBudgetUseCase {
     if (!budget) {
       throw new ApiError('Orçamento não encontrado encontrado.', 404)
     }
-    if ((await this.budgetRepository.hasOrderConfirmed(budget.id)) && !budget.disableAt) {
+    if ((await this.budgetRepository.hasOrderConfirmed(budget.id)) && !budget.disabledAt) {
       throw new ApiError('Orçamento vinculado a um pedido', 404)
     }
-    await this.budgetRepository.remove({ ...budget, disableAt: budget.disableAt ? null : new Date() })
+    await this.budgetRepository.remove({ ...budget, disabledAt: budget.disabledAt ? null : new Date() }, null)
     return budget
   }
 }

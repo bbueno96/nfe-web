@@ -4,182 +4,57 @@ import { Prisma } from '@prisma/client'
 
 class Product {
   id?: string
-  group?: string
-  brand?: string
+  group?: string | null
+  brand?: string | null
   description: string
   stock: Prisma.Decimal
-  stockMinium?: Prisma.Decimal
+  stockMinium: Prisma.Decimal
   value: Prisma.Decimal
-  valueOld: Prisma.Decimal
-  purchaseValue: Prisma.Decimal
-  lastPurchase?: Date
-  lastSale?: Date
+  valueOld?: Prisma.Decimal | null
+  purchaseValue: Prisma.Decimal | null
+  lastPurchase?: Date | null
+  lastSale?: Date | null
   createAt: Date
-  st: string
   und: string
-  barCode: string
-  ipi: Prisma.Decimal
-  disableAt?: Date
+  barCode?: string | null
+  disableAt?: Date | null
   ncm: string
-  cfop: string
-  pisCofins: boolean
-  weight: Prisma.Decimal
-  height: Prisma.Decimal
-  width: Prisma.Decimal
-  length: Prisma.Decimal
-  color: string
-  size: Prisma.Decimal
-  companyId: string
-  cstPis?: string
-  alqPis?: Prisma.Decimal
-  cstCofins?: string
-  alqCofins?: Prisma.Decimal
-  cf?: number
-  cod?: string
-  private constructor({
-    group,
-    brand,
-    description,
-    stock,
-    stockMinium,
-    value,
-    valueOld,
-    purchaseValue,
-    lastPurchase,
-    lastSale,
-    createAt,
-    st,
-    und,
-    barCode,
-    ipi,
-    disableAt,
-    ncm,
-    cfop,
-    pisCofins,
-    weight,
-    height,
-    width,
-    length,
-    color,
-    size,
-    companyId,
-    cstPis,
-    alqPis,
-    cstCofins,
-    alqCofins,
-    cf,
-    cod,
-  }: Product) {
-    return Object.assign(this, {
-      group,
-      brand,
-      description,
-      stock,
-      stockMinium,
-      value,
-      valueOld,
-      purchaseValue,
-      lastPurchase,
-      lastSale,
-      createAt,
-      st,
-      und,
-      barCode,
-      ipi,
-      disableAt,
-      ncm,
-      cfop,
-      pisCofins,
-      weight,
-      height,
-      width,
-      length,
-      color,
-      size,
-      companyId,
-      cstPis,
-      alqPis,
-      cstCofins,
-      alqCofins,
-      cf,
-      cod,
-    })
-  }
+  weight?: Prisma.Decimal | null
+  height?: Prisma.Decimal | null
+  width?: Prisma.Decimal | null
+  length?: Prisma.Decimal | null
+  color?: string | null
+  size?: Prisma.Decimal | null
+  companyId?: string | null
+  cf?: number | null
+  cod?: string | null
 
-  static create(
-    {
-      group,
-      brand,
-      description,
-      stock,
-      stockMinium,
-      value,
-      valueOld,
-      purchaseValue,
-      lastPurchase,
-      lastSale,
-      createAt,
-      st,
-      und,
-      barCode,
-      ipi,
-      disableAt,
-      ncm,
-      cfop,
-      pisCofins,
-      weight,
-      height,
-      width,
-      length,
-      color,
-      size,
-      companyId,
-      cstPis,
-      alqPis,
-      cstCofins,
-      alqCofins,
-      cf,
-      cod,
-    }: Product,
-    id?: string,
-  ) {
-    const product = new Product({
-      group,
-      brand,
-      description,
-      stock,
-      stockMinium,
-      value,
-      valueOld,
-      purchaseValue,
-      lastPurchase,
-      lastSale,
-      createAt,
-      st,
-      und,
-      barCode,
-      ipi,
-      disableAt,
-      ncm,
-      cfop,
-      pisCofins,
-      weight,
-      height,
-      width,
-      length,
-      color,
-      size,
-      companyId,
-      cstPis,
-      alqPis,
-      cstCofins,
-      alqCofins,
-      cf,
-      cod,
-    })
-
-    product.id = id || uuidv4()
-    return product
+  constructor(props: Omit<Product, 'id'>, id?: string) {
+    this.id = id || uuidv4()
+    this.group = props.group
+    this.brand = props.brand
+    this.description = props.description
+    this.stock = new Prisma.Decimal(props.stock || 0)
+    this.stockMinium = new Prisma.Decimal(props.stockMinium || 0)
+    this.value = new Prisma.Decimal(props.value || 0)
+    this.valueOld = new Prisma.Decimal(props.valueOld || 0)
+    this.purchaseValue = new Prisma.Decimal(props.purchaseValue || 0)
+    this.lastPurchase = props.lastPurchase
+    this.lastSale = props.lastSale
+    this.createAt = props.createAt
+    this.und = props.und
+    this.barCode = props.barCode
+    this.disableAt = props.disableAt
+    this.ncm = props.ncm
+    this.weight = new Prisma.Decimal(props.weight || 0)
+    this.height = new Prisma.Decimal(props.height || 0)
+    this.width = new Prisma.Decimal(props.width || 0)
+    this.length = new Prisma.Decimal(props.length || 0)
+    this.color = props.color
+    this.size = new Prisma.Decimal(props.size || 0)
+    this.companyId = props.companyId
+    this.cf = props.cf
+    this.cod = props.cod
   }
 }
 

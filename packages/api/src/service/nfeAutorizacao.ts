@@ -3,16 +3,22 @@ import https from 'https'
 import pem from 'pem'
 import xml2js from 'xml2js'
 
+import { Parameter } from '../entities/Parameter'
 import { logger } from '../utils/logger'
 
-export async function nfeAutorizacao(xmlData: string, isDev: boolean, cert: pem.Pkcs12ReadResult, parameters: any) {
+export async function nfeAutorizacao(
+  xmlData: string,
+  isDev: boolean,
+  cert: pem.Pkcs12ReadResult,
+  parameters: Parameter,
+) {
   const serviceUrl = isDev ? 'https://homologacao.nfe.fazenda.sp.gov.br/ws' : 'https://nfe.fazenda.sp.gov.br/ws'
 
   try {
     const httpsAgent = new https.Agent({
       rejectUnauthorized: false,
-      pfx: parameters.pfx,
-      passphrase: atob(parameters.passwordCert),
+      pfx: parameters.pfx ? parameters.pfx : '',
+      passphrase: atob(parameters.passwordCert ? parameters.passwordCert : ''),
     })
     const { data } = await axios.post(`${serviceUrl}/nfeautorizacao4.asmx`, xmlData, {
       headers: { 'Content-Type': 'text/xml' },

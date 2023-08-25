@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client'
 
-import { AccountPayment } from '../../entities/AccountPayment'
+import { PrismaTransaction } from '../../../prisma/types'
 import { AccountPayableRepository } from '../../repositories/AccountPayableRepository'
 import { AccountPaymentRepository } from '../../repositories/AccountPaymentRepository'
 import { ApiError } from '../../utils/ApiError'
@@ -21,19 +21,37 @@ export class CreateAccountPaymentUseCase {
     }
   }
 
-  async execute(data: ICreateAccountPaymentDTO) {
+  async execute(data: ICreateAccountPaymentDTO, prismaTransaction: PrismaTransaction) {
     await this.validate(data)
 
     const accountPayment = await this.accountPaymentRepository.create(
-      AccountPayment.create({
-        ...data,
+      {
+        createdAt: data.createdAt,
+        paymentMeanId: data.paymentMeanId,
+        bankAccountId: data.bankAccountId,
+        companyId: data.companyId,
         value: new Prisma.Decimal(data.value),
-      }),
+      },
+      prismaTransaction,
     )
-    data.accountsSelected.forEach(async as => {
-      const account = await this.accountPayableRepository.findById(as.id)
-      await this.accountPayableRepository.update({ ...account, accountPaymentId: accountPayment.id })
-    })
-    return accountPayment.id
+    if (accountPayment) {
+      await Promise.all(
+        data.accountsSelected.map(async reg => {
+          if (reg.id) {
+            const account = await this.accountPayableRepository.findById(reg.id)
+            if (account) {
+              await this.accountPayableRepository.update(
+                account.id,
+                {
+                  accountPaymentId: accountPayment.id,
+                },
+                prismaTransaction,
+              )
+            }
+          }
+        }),
+      )
+      return accountPayment.id
+    }
   }
 }

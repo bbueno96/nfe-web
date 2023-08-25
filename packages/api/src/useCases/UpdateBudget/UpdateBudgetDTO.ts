@@ -27,4 +27,9 @@ export interface IUpdateBudgetDTO {
   cityApoio?: string
   stateApoio?: string
   cpfCnpjApoio?: string
+  installments?: string
+  paymentMean?: number
+  propertyId?: string
+  customerIdApoio?: number
+  customerApoioProperty?: string
 }

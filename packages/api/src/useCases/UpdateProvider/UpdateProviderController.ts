@@ -12,6 +12,7 @@ export class UpdateProviderController {
     const {
       id,
       cpfCnpj,
+      stateInscription,
       name,
       email,
       phone,
@@ -30,6 +31,7 @@ export class UpdateProviderController {
     const provider = await this.UpdateProviderUseCase.execute({
       id,
       cpfCnpj,
+      stateInscription,
       name,
       email,
       phone,

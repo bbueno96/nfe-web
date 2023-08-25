@@ -1,48 +1,67 @@
 import { Prisma } from '@prisma/client'
 
+import { PrismaTransaction } from '../../prisma/types'
 import { prisma } from '../database/client'
 import { BudgetProducts } from '../entities/BudgetProducts'
+import { IListBudgetFilters } from '../useCases/ListBudget/ListBudgetDTO'
 
 export class BudgetProductsRepository {
-  async update(data: BudgetProducts): Promise<BudgetProducts> {
-    return await prisma.budgetProducts.update({
-      where: { id: data.id },
+  update(id: string, data: Partial<BudgetProducts>, prismaTransaction: PrismaTransaction) {
+    return prismaTransaction.budgetProducts.update({
+      where: { id },
       data,
     })
   }
 
-  async create(data: any): Promise<BudgetProducts> {
-    return await prisma.budgetProducts.create({ data })
+  create(data: BudgetProducts, prismaTransaction: PrismaTransaction) {
+    return prismaTransaction.budgetProducts.create({ data })
   }
 
-  async findById(id: string): Promise<BudgetProducts> {
-    return await prisma.budgetProducts.findUnique({
+  findById(id: string) {
+    return prisma.budgetProducts.findUnique({
       where: { id },
-      include: { Product: true },
+      select: {
+        id: true,
+        budgetId: true,
+        productId: true,
+        amount: true,
+        unitary: true,
+        total: true,
+        Product: { select: { id: true, stock: true, description: true, cod: true } },
+      },
     })
   }
 
-  async findByBudget(budgetId: string): Promise<any[]> {
-    return await prisma.budgetProducts.findMany({
+  findByBudget(budgetId: string) {
+    return prisma.budgetProducts.findMany({
       where: { budgetId },
-      include: { Product: true },
+      select: {
+        id: true,
+        budgetId: true,
+        productId: true,
+        amount: true,
+        unitary: true,
+        total: true,
+        Product: { select: { id: true, stock: true, description: true, cod: true, und: true } },
+      },
+      orderBy: { productId: 'asc' as Prisma.SortOrder },
     })
   }
 
-  async remove(budgetId: string): Promise<void> {
-    await prisma.budgetProducts.deleteMany({
+  async remove(budgetId: string, prismaTransaction: PrismaTransaction): Promise<void> {
+    await prismaTransaction.budgetProducts.deleteMany({
       where: { budgetId },
     })
   }
 
-  async list(filters: any): Promise<List<BudgetProducts>> {
+  async list(filters: IListBudgetFilters): Promise<List<BudgetProducts>> {
     const { budgetId, page, perPage, orderBy } = filters
 
     const items = await prisma.budgetProducts.findMany({
       where: {
         budgetId: { contains: budgetId, mode: 'insensitive' },
       },
-      skip: Number((page - 1) * perPage) || undefined,
+      skip: ((page ?? 1) - 1) * (perPage ?? 10),
       take: perPage,
       orderBy: {
         budgetId: orderBy as Prisma.SortOrder,
@@ -59,8 +78,8 @@ export class BudgetProductsRepository {
       items,
       pager: {
         records,
-        page,
-        perPage,
+        page: page ?? 1,
+        perPage: perPage ?? 10,
         pages: perPage ? Math.ceil(records / perPage) : 1,
       },
     }

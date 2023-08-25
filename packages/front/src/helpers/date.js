@@ -49,3 +49,6 @@ export const monthDisabledBefore = (day, minDate) =>
 
 export const monthDisabledAfter = (day, maxDate) =>
   maxDate && differenceInCalendarMonths(maxDate, addMonths(day, 1)) > 0
+
+export const isDateInutilizar = nfeDate =>
+  nfeDate && new Date().getDay() < 11 && differenceInCalendarMonths(new Date(), new Date(nfeDate)) <= 1

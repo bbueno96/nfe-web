@@ -27,7 +27,7 @@ export class UpdatePayMethodUseCase {
     this.sanitizeData(data)
     this.validate(data)
 
-    await this.payMethodsRepository.update({
+    await this.payMethodsRepository.update(oldData.id, {
       ...data,
       fine: new Prisma.Decimal(data.fine),
       interest: new Prisma.Decimal(data.interest),

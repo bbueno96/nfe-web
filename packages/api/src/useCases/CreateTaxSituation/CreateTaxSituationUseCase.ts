@@ -1,6 +1,5 @@
 import { Prisma } from '@prisma/client'
 
-import { TaxSituation } from '../../entities/TaxSituation'
 import { TaxSituationsRepository } from '../../repositories/TaxSituationsRepository'
 import { ApiError } from '../../utils/ApiError'
 import { ICreateTaxSituationDTO } from './CreateTaxSituationDTO'
@@ -22,16 +21,14 @@ export class CreateTaxSituationUseCase {
     this.sanitizeData(data)
     await this.validate(data)
 
-    const taxSituation = await this.taxSituationRepository.create(
-      TaxSituation.create({
-        ...data,
-        aliquotaIcms: new Prisma.Decimal(data.aliquotaIcms),
-        baseIcms: new Prisma.Decimal(data.baseIcms),
-        aliquotaIcmsSt: null,
-        baseIcmsSt: null,
-        mva: null,
-      }),
-    )
+    const taxSituation = await this.taxSituationRepository.create({
+      ...data,
+      aliquotaIcms: new Prisma.Decimal(data.aliquotaIcms),
+      baseIcms: new Prisma.Decimal(data.baseIcms || 0),
+      aliquotaIcmsSt: null,
+      baseIcmsSt: null,
+      mva: null,
+    })
     return taxSituation.id
   }
 }

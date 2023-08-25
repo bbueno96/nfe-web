@@ -9,5 +9,5 @@ export function getAuthToken(data?: Partial<TokenOperator>) {
     ...data,
   }
 
-  return jwt.sign(payload, process.env.APP_SECRET, { expiresIn: '10y' })
+  return jwt.sign(payload, process.env.APP_SECRET!, { expiresIn: '10y' })
 }

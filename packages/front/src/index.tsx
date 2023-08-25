@@ -7,27 +7,37 @@ import { Route, Routes, BrowserRouter } from 'react-router-dom'
 
 import { AppProvider } from './App'
 import { Panel } from './components/panel'
-import { AccountPayableForm, AccountPayableList } from './pages/accountPayable'
-import { AccountPaymentForm, AccountPaymentList } from './pages/accountPayment'
-import { BankAccountList } from './pages/bankAccount'
-import { BankRemittanceForm, BankRemittanceList } from './pages/bankRemittance'
-import { BrandList } from './pages/brand'
-import { BudgetForm, BudgetList } from './pages/budget'
-import { ClassificationList } from './pages/classification'
+import { AccountPayableForm } from './pages/accountPayable/form'
+import { AccountPayableList } from './pages/accountPayable/list'
+import { AccountPaymentForm } from './pages/accountPayment/form'
+import { AccountPaymentList } from './pages/accountPayment/list'
+import { BankAccountList } from './pages/bankAccount/list'
+import { BankRemittanceForm } from './pages/bankRemittance/form'
+import { BankRemittanceList } from './pages/bankRemittance/list'
+import { BrandList } from './pages/brand/list'
+import { BudgetForm } from './pages/budget/form'
+import { BudgetList } from './pages/budget/list'
+import { ClassificationList } from './pages/classification/list'
 import { CustomerForm, CustomerList } from './pages/customer'
 import { AdminDashboard } from './pages/dashboard'
-import { SellerForm, SellerList } from './pages/employee'
-import { GroupList } from './pages/group'
-import { InstallmentForm, InstallmentsList } from './pages/installments'
+import { SellerForm } from './pages/employee/form'
+import { SellerList } from './pages/employee/list'
+import { GroupList } from './pages/group/list'
+import { InstallmentForm } from './pages/installments/form'
+import { InstallmentsList } from './pages/installments/list'
 import { AdminLogin } from './pages/login'
-import { NfeForm, NfeList } from './pages/nfe'
-import { NfeInputForm, NfeInputList } from './pages/nfeInput'
-import { OrderForm, OrdertList } from './pages/Order'
-import { PayMethodForm, PayMethodList } from './pages/payMethod'
-import { ProductForm, ProductList } from './pages/product'
-import { ProviderForm, ProviderList } from './pages/provider'
+import { NfeForm } from './pages/nfe/form'
+import { NfeList } from './pages/nfe/list'
+import { NfeInputForm } from './pages/nfeInput/form'
+import { NfeInputList } from './pages/nfeInput/list'
+import { OrderForm } from './pages/Order/form'
+import { OrdertList } from './pages/Order/list'
+import { PayMethodForm } from './pages/payMethod/form'
+import { ProductForm } from './pages/product/form'
+import { ProductList } from './pages/product/list'
+import { ProviderForm } from './pages/provider/form'
+import { ProviderList } from './pages/provider/list'
 import { ParameterForm } from './pages/settings/parameterForm'
-import { TaxSituationForm, TaxSituationList } from './pages/taxSituation'
 
 const rootElement = document.getElementById('root')
 render(
@@ -69,22 +79,11 @@ render(
                       element: <BrandList />,
                     },
                     {
-                      title: 'Situação Tributaria',
-                      path: ['/tributacao'],
-                      element: <TaxSituationList />,
-                    },
-                    {
                       title: 'Produtos',
                       path: ['/produto'],
                       element: <ProductList />,
                     },
                   ],
-                },
-                {
-                  title: 'Formas de Pagamento',
-                  path: ['/forma-pagamento'],
-                  icon: 'fas fa-hand-holding-usd',
-                  element: <PayMethodList />,
                 },
                 {
                   title: 'Orçamentos',
@@ -125,12 +124,12 @@ render(
                       element: <ClassificationList />,
                     },
                     {
-                      title: 'Constas a Pagar',
+                      title: 'Contas a Pagar',
                       path: ['/conta-pagar'],
                       element: <AccountPayableList />,
                     },
                     {
-                      title: 'Constas a Receber',
+                      title: 'Contas a Receber',
                       path: ['/receber'],
                       element: <InstallmentsList />,
                     },
@@ -174,11 +173,6 @@ render(
                   title: '',
                   path: ['/fornecedor/cadastro', '/fornecedor/:id'],
                   element: <ProviderForm />,
-                },
-                {
-                  title: '',
-                  path: ['/tributacao/cadastro', '/tributacao/:id'],
-                  element: <TaxSituationForm />,
                 },
                 {
                   title: '',

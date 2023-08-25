@@ -40,6 +40,7 @@ export class CreateProviderController {
       cityId,
       state,
       companyId,
+      informarGTIN: false,
     })
     return response.status(201).json({ id })
   }

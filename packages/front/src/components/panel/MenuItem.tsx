@@ -20,11 +20,11 @@ interface DropdownMenuItemProps {
   actualPath: string
   basename: string
   updateScroll: VoidFunction
-  sidebarElement: HTMLElement
+  sidebarElement?: HTMLElement
 }
 
 export const SingleMenuItem = ({ page, actualPath, basename }: SingleMenuItemProps) => {
-  const href = firstOrSelf(page.path)
+  const href = firstOrSelf(page?.path || '')
   const isExternal = !!href.match('https?://')
   const to = isExternal ? href : basename + href
 
@@ -50,9 +50,9 @@ export const DropdownMenuItem = ({
   sidebarElement,
 }: DropdownMenuItemProps) => {
   const { operator } = useApp()
-  const isActive = page.pages.some(p => actualPath.includes(firstOrSelf(p.path)))
+  const isActive = page?.pages?.some(p => actualPath.includes(firstOrSelf(p?.path || '')))
   const wasActive = usePrevious(isActive)
-  const [opened, setOpened] = useState<boolean>(isActive)
+  const [opened, setOpened] = useState<boolean>(isActive || false)
   const [scrollTop, setScrollTop] = useState<number>(0)
 
   useEffect(() => {
@@ -92,19 +92,19 @@ export const DropdownMenuItem = ({
       </button>
       <div className="kt-menu__submenu">
         <ul className="kt-menu__subnav">
-          {page.pages
-            .filter(
-              ({ roles }) => !roles || (roles && operator.roles && operator.roles.map(role => roles.includes(role))),
+          {page?.pages
+            ?.filter(
+              ({ roles }) => !roles || (roles && operator?.roles && operator?.roles.map(role => roles.includes(role))),
             )
             .map(p => (
               <li
-                key={firstOrSelf(p.path)}
+                key={firstOrSelf(p?.path || '')}
                 aria-haspopup="true"
                 className={classNames('kt-menu__item', {
-                  'kt-menu__item--active': actualPath.includes(firstOrSelf(p.path)),
+                  'kt-menu__item--active': actualPath.includes(firstOrSelf(p.path || '')),
                 })}
               >
-                <Link className="kt-menu__link" to={basename + firstOrSelf(p.path)}>
+                <Link className="kt-menu__link" to={basename + firstOrSelf(p.path || '')}>
                   <i className="kt-menu__link-bullet kt-menu__link-bullet--dot">
                     <span />
                   </i>

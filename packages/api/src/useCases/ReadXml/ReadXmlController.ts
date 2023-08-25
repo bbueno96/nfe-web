@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 
+import { prisma } from '../../prisma'
 import { ReadXmlUseCase } from './ReadXmlUseCase'
 
 export class ReadXmlController {
@@ -7,16 +8,20 @@ export class ReadXmlController {
     this.handle = this.handle.bind(this)
   }
 
-  async handle(request: Request, response: Response) {
+  handle(request: Request, response: Response) {
     const { getApoio } = request.body
     const buffer = request.file?.buffer
     const { companyId } = request.user
-    const nfe = await this.readXmlUseCase.execute({
-      xml: buffer,
-      companyId,
-      getApoio: getApoio === 'true',
+    return prisma.$transaction(async prismaTransaction => {
+      const nfe = await this.readXmlUseCase.execute(
+        {
+          xml: buffer,
+          companyId,
+          getApoio: getApoio === 'true',
+        },
+        prismaTransaction,
+      )
+      return response.json(nfe)
     })
-
-    return response.json(nfe)
   }
 }

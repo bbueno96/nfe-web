@@ -10,7 +10,7 @@ export class RemoveOrderUseCase {
     if (!order) {
       throw new ApiError('Pedido não encontrado.', 404)
     }
-    await this.orderRepository.remove({ ...order, disableAt: new Date() })
+    await this.orderRepository.remove({ ...order, disabledAt: new Date() }, null)
     return order
   }
 }

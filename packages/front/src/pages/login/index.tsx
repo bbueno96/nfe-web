@@ -19,6 +19,7 @@ interface AdminLoginValues {
 export const AdminLogin = () => {
   const [globalError, setGlobalError] = useState<string | null>(null)
   const app = useApp()
+  const { saSignIn } = app
   const pushTo = useNavigate()
   const form = useFormik<AdminLoginValues>({
     initialValues: { login: '', password: '' },
@@ -33,8 +34,7 @@ export const AdminLogin = () => {
   }, [app.saToken])
 
   function handleSubmit(values: AdminLoginValues) {
-    app
-      .saSignIn(values)
+    saSignIn(values)
       .then(() => pushTo('/'))
       .catch(err => setGlobalError(err.response.data.message))
       .finally(() => form.setSubmitting(false))

@@ -41,7 +41,7 @@ export const DecimalConfig = {
 export const zip = (first, second) => first.map((f, i) => [f, second[i]])
 
 export const convertMaskToPlaceholder = (mask = []) =>
-  mask.map(char => (char instanceof RegExp ? placeholderChar : char)).join('')
+  mask.map(char => (String instanceof RegExp ? placeholderChar : char)).join('')
 
 export const conformToMask = config => {
   const { value = '', previousValue, mask, placeholder, caretPosition } = config

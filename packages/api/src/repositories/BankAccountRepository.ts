@@ -1,34 +1,38 @@
 import { Prisma } from '@prisma/client'
 
+import { PrismaTransaction } from '../../prisma/types'
 import { prisma } from '../database/client'
 import { BankAccount } from '../entities/BankAccount'
+import { IListBankAccountFilters } from '../useCases/ListBankAccount/ListBankAccountDTO'
 
 export class BankAccountRepository {
-  async update(data: BankAccount): Promise<BankAccount> {
-    return await prisma.bankAccount.update({
-      where: { id: data.id },
+  update(id: string, data: Partial<BankAccount>, prismaTransaction: PrismaTransaction | null) {
+    const connection = prismaTransaction ?? prisma
+    return connection.bankAccount.update({
+      where: { id },
       data,
     })
   }
 
-  async create(data: BankAccount): Promise<BankAccount> {
-    return await prisma.bankAccount.create({ data })
+  create(data: BankAccount, prismaTransaction: PrismaTransaction | null) {
+    const connection = prismaTransaction ?? prisma
+    return connection.bankAccount.create({ data })
   }
 
-  async findById(id: string): Promise<BankAccount> {
+  async findById(id: string) {
     return await prisma.bankAccount.findUnique({
       where: { id },
     })
   }
 
-  async remove(bankAccount: BankAccount): Promise<void> {
-    await prisma.bankAccount.update({
+  async remove(bankAccount: BankAccount, prismaTransaction: PrismaTransaction): Promise<void> {
+    await prismaTransaction.bankAccount.update({
       where: { id: bankAccount.id },
       data: { disabledAt: new Date() },
     })
   }
 
-  async list(filters: any): Promise<List<BankAccount>> {
+  async list(filters: IListBankAccountFilters): Promise<List<BankAccount>> {
     const { companyId, description, page, perPage, orderBy } = filters
 
     const items = await prisma.bankAccount.findMany({
@@ -36,7 +40,7 @@ export class BankAccountRepository {
         description: { contains: description, mode: 'insensitive' },
         companyId,
       },
-      skip: Number((page - 1) * perPage) || undefined,
+      skip: ((page ?? 1) - 1) * (perPage ?? 10),
       take: perPage,
       orderBy: {
         description: orderBy as Prisma.SortOrder,
@@ -54,8 +58,8 @@ export class BankAccountRepository {
       items,
       pager: {
         records,
-        page,
-        perPage,
+        page: page ?? 1,
+        perPage: perPage ?? 10,
         pages: perPage ? Math.ceil(records / perPage) : 1,
       },
     }

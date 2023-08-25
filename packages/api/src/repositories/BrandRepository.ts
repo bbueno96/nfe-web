@@ -5,19 +5,19 @@ import { Brand } from '../entities/Brand'
 import { IListBrandFilters } from '../useCases/ListBrand/ListBrandDTO'
 
 export class BrandRepository {
-  async update(data: Brand): Promise<Brand> {
-    return await prisma.brand.update({
-      where: { id: data.id },
+  update(id: string, data: Partial<Brand>) {
+    return prisma.brand.update({
+      where: { id },
       data,
     })
   }
 
-  async create(data: Brand): Promise<Brand> {
-    return await prisma.brand.create({ data })
+  create(data: Brand) {
+    return prisma.brand.create({ data })
   }
 
-  async findById(id: string): Promise<Brand> {
-    return await prisma.brand.findUnique({
+  findById(id: string) {
+    return prisma.brand.findUnique({
       where: { id },
     })
   }
@@ -37,7 +37,7 @@ export class BrandRepository {
         description: { contains: description, mode: 'insensitive' },
         companyId,
       },
-      skip: Number((page - 1) * perPage) || undefined,
+      skip: ((page ?? 1) - 1) * (perPage ?? 10),
       take: perPage,
       orderBy: {
         description: orderBy as Prisma.SortOrder,
@@ -55,8 +55,8 @@ export class BrandRepository {
       items,
       pager: {
         records,
-        page,
-        perPage,
+        page: page ?? 1,
+        perPage: perPage ?? 10,
         pages: perPage ? Math.ceil(records / perPage) : 1,
       },
     }

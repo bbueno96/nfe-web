@@ -78,7 +78,7 @@ export default function DecimalInput({
           name={name}
           ref={inputRef}
           value={maskDecimal(field.value || 0, precision)}
-          className={classNames('form-control form-control', { 'is-invalid': hasError })}
+          className={classNames('form-control form-control kt-align-right', { 'is-invalid': hasError })}
           onChange={handleChange}
           onBlur={field.onBlur}
           onFocus={handleFocus}

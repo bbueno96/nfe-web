@@ -4,37 +4,21 @@ import { Prisma } from '@prisma/client'
 
 class BudgetProducts {
   id?: string
-  budgetId: string
-  productId: string
-  amount: Prisma.Decimal
-  unitary: Prisma.Decimal
-  total: Prisma.Decimal
-  companyId: string
+  budgetId?: string | null
+  productId?: string | null
+  amount?: Prisma.Decimal | null
+  unitary?: Prisma.Decimal | null
+  total?: Prisma.Decimal | null
+  companyId?: string | null
 
-  private constructor({ budgetId, productId, amount, unitary, total, companyId }: BudgetProducts) {
-    return Object.assign(this, {
-      budgetId,
-      productId,
-      amount,
-      unitary,
-      total,
-      companyId,
-    })
-  }
-
-  static create({ budgetId, productId, amount, unitary, total, companyId }: BudgetProducts) {
-    const budgetProducts = new BudgetProducts({
-      budgetId,
-      productId,
-      amount,
-      unitary,
-      total,
-      companyId,
-    })
-
-    budgetProducts.id = uuidv4()
-
-    return budgetProducts
+  constructor(props: Omit<BudgetProducts, 'id'>, id?: string) {
+    this.id = id || uuidv4()
+    this.budgetId = props.budgetId
+    this.productId = props.productId
+    this.amount = new Prisma.Decimal(props.amount || 0)
+    this.unitary = new Prisma.Decimal(props.unitary || 0)
+    this.total = new Prisma.Decimal(props.total || 0)
+    this.companyId = props.companyId
   }
 }
 

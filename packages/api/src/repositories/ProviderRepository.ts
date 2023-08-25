@@ -5,30 +5,30 @@ import { Provider } from '../entities/Provider'
 import { IListProvidersFilters } from '../useCases/ListProviders/ListProvidersDTO'
 
 export class ProviderRepository {
-  async hasCnpj(cpfCnpj: string): Promise<boolean> {
-    const count = await prisma.provider.count({ where: { cpfCnpj } })
+  async hasCnpj(cpfCnpj: string, companyId: string): Promise<boolean> {
+    const count = await prisma.provider.count({ where: { cpfCnpj, companyId } })
     return count > 0
   }
 
-  async update(data: Provider): Promise<Provider> {
-    return await prisma.provider.update({
-      where: { id: data.id },
+  update(id: string, data: Partial<Provider>) {
+    return prisma.provider.update({
+      where: { id },
       data,
     })
   }
 
-  async create(data: Provider): Promise<Provider> {
-    return await prisma.provider.create({ data })
+  create(data: Provider) {
+    return prisma.provider.create({ data })
   }
 
-  async findById(id: string): Promise<Provider> {
-    return await prisma.provider.findUnique({
+  findById(id: string) {
+    return prisma.provider.findUnique({
       where: { id },
     })
   }
 
-  async findByCnpj(CNPJ: string, company: string): Promise<Provider> {
-    return await prisma.provider.findFirst({
+  findByCnpj(CNPJ: string, company: string) {
+    return prisma.provider.findFirst({
       where: { cpfCnpj: CNPJ, companyId: company },
     })
   }
@@ -41,7 +41,7 @@ export class ProviderRepository {
   }
 
   async list(filters: IListProvidersFilters): Promise<List<Provider>> {
-    const { companyId, cpfCnpj, name, page, perPage, orderBy } = filters
+    const { companyId, cpfCnpj, name, page, perPage } = filters
 
     const items = await prisma.provider.findMany({
       where: {
@@ -49,10 +49,10 @@ export class ProviderRepository {
         name: { contains: name, mode: 'insensitive' },
         companyId,
       },
-      skip: Number((page - 1) * perPage) || undefined,
+      skip: ((page ?? 1) - 1) * (perPage ?? 10),
       take: perPage,
       orderBy: {
-        dateCreated: orderBy as Prisma.SortOrder,
+        name: 'asc' as Prisma.SortOrder,
       },
     })
 
@@ -68,15 +68,15 @@ export class ProviderRepository {
       items,
       pager: {
         records,
-        page,
-        perPage,
+        page: page ?? 1,
+        perPage: perPage ?? 10,
         pages: perPage ? Math.ceil(records / perPage) : 1,
       },
     }
   }
 
   async listOutro(filters: IListProvidersFilters): Promise<List<Provider>> {
-    const { companyId, cpfCnpj, name, page, perPage, orderBy } = filters
+    const { companyId, cpfCnpj, name, page, perPage } = filters
 
     const items = await prisma.provider.findMany({
       where: {
@@ -84,10 +84,10 @@ export class ProviderRepository {
         name: { contains: name, mode: 'insensitive' },
         companyId,
       },
-      skip: Number((page - 1) * perPage) || undefined,
+      skip: ((page ?? 1) - 1) * (perPage ?? 10),
       take: perPage,
       orderBy: {
-        dateCreated: orderBy as Prisma.SortOrder,
+        name: 'asc' as Prisma.SortOrder,
       },
     })
 
@@ -103,8 +103,8 @@ export class ProviderRepository {
       items,
       pager: {
         records,
-        page,
-        perPage,
+        page: page ?? 1,
+        perPage: perPage ?? 10,
         pages: perPage ? Math.ceil(records / perPage) : 1,
       },
     }

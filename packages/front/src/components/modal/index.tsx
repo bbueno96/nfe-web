@@ -20,19 +20,21 @@ interface ModalProps {
 
 export function Modal({ message, title, type, show, value, setModal }: ModalProps) {
   const closeModal = useCallback(
-    action =>
+    (action: 'close' | 'submit') => {
+      setModal(prev => ({ ...prev, show: false }))
       setModal(prev => {
         const { callback, ...state } = prev
 
         if (prev.type === 'prompt' && action !== 'close' && callback) {
           callback(prev.value)
-        } else if (['confirm', 'alert'].includes(prev.type) && callback) {
+        } else if (['confirm', 'alert'].includes(prev.type || '') && callback) {
           const hasSubmitted = action === 'submit'
           callback(hasSubmitted)
         }
 
         return { ...state, show: false }
-      }),
+      })
+    },
     [setModal],
   )
 

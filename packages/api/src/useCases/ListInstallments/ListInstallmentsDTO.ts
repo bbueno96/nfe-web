@@ -9,7 +9,7 @@ export interface IListInstallmentFilters {
   bankAccountId?: string
   customerApoioName?: string
   ourNumer?: string
-  document?: string
+  numeroDoc?: string
   isPaid?: boolean
   page?: number
   perPage?: number

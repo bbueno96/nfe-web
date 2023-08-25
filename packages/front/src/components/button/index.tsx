@@ -8,13 +8,13 @@ interface ButtonProps {
   loading?: boolean
   onClick?: (target: EventTarget) => void
   customClassName?: string
-  icon?: string
-  title?: string
+  icon?: string | null
+  title?: string | null
   className?: string
   disabled?: boolean
 }
 
-function renderContent(loading: boolean, title: string, icon: string) {
+function renderContent(loading: boolean, title: string | null, icon: string | null) {
   if (loading) {
     return (
       <>
@@ -54,11 +54,11 @@ export const Button = ({
 
   return typeof onClick === 'string' ? (
     <Link className={buttonClassName} to={onClick}>
-      {renderContent(loading, title, icon)}
+      {renderContent(loading, title || '', icon || '')}
     </Link>
   ) : (
     <button type={type} disabled={disabled} className={buttonClassName} onClick={handleClick}>
-      {renderContent(loading, title, icon)}
+      {renderContent(loading, title || '', icon || '')}
     </button>
   )
 }

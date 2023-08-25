@@ -1,13 +1,14 @@
 import { Request, Response } from 'express'
 
+import { prisma } from '../../prisma'
 import { CreateBudgetUseCase } from './CreateBudgetUseCase'
 
 export class CreateBudgetController {
-  constructor(private CreateBudgetUseCase: CreateBudgetUseCase) {
+  constructor(private createBudgetUseCase: CreateBudgetUseCase) {
     this.handle = this.handle.bind(this)
   }
 
-  async handle(request: Request, response: Response) {
+  handle(request: Request, response: Response) {
     const { companyId, id: employeeId } = request.user
 
     const {
@@ -38,39 +39,55 @@ export class CreateBudgetController {
       stateApoio,
       cityApoio,
       cpfCnpjApoio,
+      installments,
+      paymentMean,
+      propertyId,
+      customerIdApoio,
+      customerApoioProperty,
     } = request.body
 
-    const id = await this.CreateBudgetUseCase.execute({
-      numberBudget,
-      createdAt,
-      status,
-      discount,
-      total,
-      deliveryForecast,
-      customerId,
-      shipping,
-      employeeId,
-      auth,
-      companyId,
-      products: BudgetProducts,
-      Customer,
-      obs,
-      payMethodId,
-      customerApoioId,
-      customerApoioName,
-      stateInscriptionApoio,
-      emailApoio,
-      phoneApoio,
-      addressApoio,
-      addressNumberApoio,
-      complementApoio,
-      provinceApoio,
-      postalCodeApoio,
-      cityIdApoio,
-      stateApoio,
-      cityApoio,
-      cpfCnpjApoio,
+    return prisma.$transaction(async prismaTransaction => {
+      const id = await this.createBudgetUseCase.execute(
+        {
+          numberBudget,
+          createdAt,
+          status,
+          discount,
+          total,
+          deliveryForecast,
+          customerId,
+          shipping,
+          employeeId,
+          auth,
+          companyId,
+          products: BudgetProducts.filter(prod => prod.amount > 0),
+          Customer,
+          obs,
+          payMethodId,
+          customerApoioId,
+          customerApoioName,
+          stateInscriptionApoio,
+          emailApoio,
+          phoneApoio,
+          addressApoio,
+          addressNumberApoio,
+          complementApoio,
+          provinceApoio,
+          postalCodeApoio,
+          cityIdApoio,
+          stateApoio,
+          cityApoio,
+          cpfCnpjApoio,
+          installments,
+          paymentMean,
+          propertyId,
+          customerIdApoio,
+          customerApoioProperty,
+        },
+        prismaTransaction,
+      )
+
+      return response.status(201).json({ id })
     })
-    return response.status(201).json({ id })
   }
 }

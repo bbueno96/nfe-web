@@ -17,11 +17,13 @@ import { createGroupController } from './useCases/CreateGroup'
 import { createInstallmentController } from './useCases/CreateInstallment'
 import { createNfeController } from './useCases/CreateNfe'
 import { createNfeInputController } from './useCases/CreateNfeInput'
+import { createNfeReturnController } from './useCases/CreateNfeReturn'
 import { createOrderController } from './useCases/CreateOrder'
-import { createPayMethodController } from './useCases/CreatePayMethod'
 import { createProductController } from './useCases/CreateProduct'
 import { createProviderController } from './useCases/CreateProvider'
+import { createStockProductsController } from './useCases/CreateStockProduct'
 import { createTaxSituationController } from './useCases/CreateTaxSituation'
+import { emailNfeController } from './useCases/EmailNfe'
 import { exportBradesco400Controller } from './useCases/ExportBradesco400'
 import { exportSicredi240Controller } from './useCases/ExportSicredi240'
 import { getAccountPayableByIdController } from './useCases/GetAccountPayableById'
@@ -38,6 +40,7 @@ import { getGroupByIdController } from './useCases/GetGroupById'
 import { getInstallmentByIdController } from './useCases/GetInstallmentById'
 import { getNfeByIdController } from './useCases/GetNfeById'
 import { getNfePdfController } from './useCases/GetNfePdf'
+import { getNfeXmlController } from './useCases/GetNfeXml'
 import { getOrderByIdController } from './useCases/GetOrderById'
 import { getOrderPdfController } from './useCases/GetOrderPdf'
 import { getParameterController } from './useCases/GetParameters'
@@ -45,6 +48,7 @@ import { getPayMethodByIdController } from './useCases/GetPayMethodById'
 import { getProductByIdController } from './useCases/GetProductById'
 import { getProviderByIdController } from './useCases/GetProviderById'
 import { getTaxSituationByIdController } from './useCases/GetTaxSituationById'
+import { inutilNfeController } from './useCases/InutilNfe'
 // import { importReturnController } from './useCases/ImportReturn'
 import { listAccountPayableController } from './useCases/ListAccountPayable'
 import { listAccountPaymentController } from './useCases/ListAccountPayment'
@@ -61,10 +65,14 @@ import { listNfeController } from './useCases/ListNfe'
 import { listOrderController } from './useCases/ListOrder'
 import { listPayMethodController } from './useCases/ListPayMethod'
 import { listProductsController } from './useCases/ListProducts'
+import { listProductStockPostController } from './useCases/ListProductStockPost'
+import { listProductTaxPostController } from './useCases/ListProductTaxPost'
 import { listProvidersController } from './useCases/ListProviders'
 import { listTaxSituationController } from './useCases/ListTaxSituation'
 import { listTaxSituationPostController } from './useCases/ListTaxSituationPost'
+import { listXmlNfeController } from './useCases/ListXmlNfe'
 import { loginAdminController } from './useCases/LoginAdmin'
+import { preDanfeNfeController } from './useCases/PredanfeNfe'
 import { readXmlController } from './useCases/ReadXml'
 import { removeClassificationController } from './useCases/RemoveClassification'
 import { removeCustomerController } from './useCases/RemoveCustomer'
@@ -82,8 +90,10 @@ import { updateOrderController } from './useCases/UpdateOrder'
 import { updateParameterController } from './useCases/UpdateParameter'
 import { updatePayMethodController } from './useCases/UpdatePayMethod'
 import { updateProductController } from './useCases/UpdateProduct'
+import { updateProductTaxController } from './useCases/UpdateProductTax'
 import { updateProviderController } from './useCases/UpdateProvider'
 import { updateTaxSituationController } from './useCases/UpdateTaxSituation'
+import { validationNfeController } from './useCases/ValidationNfe'
 import { authorize } from './utils/express/authorizeMiddleware'
 import { runAsync } from './utils/express/runAsync'
 
@@ -151,13 +161,20 @@ router.get('/installment.key/:id', authorize('Admin'), runAsync(getInstallmentBy
 // router.post('/import.return', runAsync(importReturnController.handle))
 
 router.post('/nfe.list', authorize('Admin'), runAsync(listNfeController.handle))
+router.post('/nfe.listxml', authorize('Admin'), runAsync(listXmlNfeController.handle))
 router.post('/nfe.add', authorize('Admin'), runAsync(createNfeController.handle))
+router.post('/nfereturn.add', authorize('Admin'), runAsync(createNfeReturnController.handle))
 router.post('/nfeinput.add', authorize('Admin'), runAsync(createNfeInputController.handle))
 router.get('/nfe.key/:id', authorize('Admin'), runAsync(getNfeByIdController.handle))
 router.get('/nfe.report/:id', authorize('Admin'), runAsync(getNfePdfController.handle))
+router.get('/nfe.xml/:id', authorize('Admin'), runAsync(getNfeXmlController.handle))
 router.get('/nfe.authorize/:id', authorize('Admin'), runAsync(sendAuthNfeController.handle))
+router.get('/nfe.predanfe/:id', authorize('Admin'), runAsync(preDanfeNfeController.handle))
 router.get('/nfe.check/:id', authorize('Admin'), runAsync(checkNfeController.handle))
+router.get('/nfe.validation/:id', authorize('Admin'), runAsync(validationNfeController.handle))
 router.get('/nfe.cancel/:id', authorize('Admin'), runAsync(cancelNfeController.handle))
+router.get('/nfe.inutil/:id', authorize('Admin'), runAsync(inutilNfeController.handle))
+router.get('/nfe.email/:id', authorize('Admin'), runAsync(emailNfeController.handle))
 router.post('/nfe.carta/', authorize('Admin'), runAsync(cartaNfeController.handle))
 router.post('/nfe.update/:id', authorize('Admin'), runAsync(updateNfeController.handle))
 
@@ -167,7 +184,6 @@ router.get('/order.key/:id', authorize('Admin'), runAsync(getOrderByIdController
 router.post('/order.update/:id', authorize('Admin'), runAsync(updateOrderController.handle))
 router.get('/order.report/:id', authorize('Admin'), runAsync(getOrderPdfController.handle))
 
-router.post('/paymethod.add', authorize('Admin'), runAsync(createPayMethodController.handle))
 router.post('/paymethod.list', authorize('Admin'), runAsync(listPayMethodController.handle))
 router.get('/paymethod.key/:id', authorize('Admin'), runAsync(getPayMethodByIdController.handle))
 router.post('/paymethod.update/:id', authorize('Admin'), runAsync(updatePayMethodController.handle))
@@ -184,6 +200,10 @@ router.post('/product.list', authorize('Admin'), runAsync(listProductsController
 router.post('/product.add', authorize('Admin'), runAsync(createProductController.handle))
 router.get('/product.key/:id', authorize('Admin'), runAsync(getProductByIdController.handle))
 router.post('/product.update/:id', authorize('Admin'), runAsync(updateProductController.handle))
+router.post('/producttax.list', authorize('Admin'), runAsync(listProductTaxPostController.handle))
+router.post('/productstock.list', authorize('Admin'), runAsync(listProductStockPostController.handle))
+router.post('/producttax.add', authorize('Admin'), runAsync(updateProductTaxController.handle))
+router.post('/stockproduct.add', authorize('Admin'), runAsync(createStockProductsController.handle))
 
 router.post('/provider.add', authorize('Admin'), runAsync(createProviderController.handle))
 router.post('/provider.list', authorize('Admin'), runAsync(listProvidersController.handle))

@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "nfe" ALTER COLUMN "observacoes" SET DATA TYPE VARCHAR(5000),
+ALTER COLUMN "informacoesFisco" SET DATA TYPE VARCHAR(2000);

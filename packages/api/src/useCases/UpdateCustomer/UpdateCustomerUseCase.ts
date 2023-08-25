@@ -1,6 +1,3 @@
-import { Prisma } from '@prisma/client'
-
-import { Customer } from '../../entities/Customer'
 import { CustomerRepository } from '../../repositories/CustomerRepository'
 import { ApiError } from '../../utils/ApiError'
 import { isCnpj, isCpf } from '../../utils/cpfCnpj'
@@ -37,7 +34,7 @@ export class UpdateCustomerUseCase {
     if (!customer) {
       throw new ApiError('Cliente não encontrado.', 404)
     }
-    await this.customerRepository.update({
+    await this.customerRepository.update(customer.id, {
       ...data,
       dateCreated: new Date(),
     })

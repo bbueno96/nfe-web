@@ -18,17 +18,21 @@ export function usePostList<T>({ initialQuery }: PostListSettings) {
     items: [],
     pager: { page: 1, pages: 1, perPage: 10, records: 0, usePager: true },
   })
+  const updateFilters = useCallback(
+    (filters: FilterGroup[] | undefined) => setQuery(prev => ({ ...prev, filters })),
+    [setQuery],
+  )
   const updatePage = useCallback((page: number) => setQuery(prev => ({ ...prev, page })), [setQuery])
   const updatePerPage = useCallback((perPage: number) => setQuery(prev => ({ ...prev, perPage })), [setQuery])
   const updateSort = useCallback(
     (path: string, remove: boolean) => {
       if (remove) {
-        setQuery(prev => ({ ...prev, sort: prev.sort.filter(sortItem => sortItem.name !== path) }))
+        setQuery(prev => ({ ...prev, sort: prev.sort?.filter(sortItem => sortItem.name !== path) }))
       } else {
         setQuery(prev => {
           let hasIn = false
 
-          const newSort: SortingItem[] = prev.sort.map(sortItem => {
+          const newSort: SortingItem[] | undefined = prev.sort?.map(sortItem => {
             if (path === sortItem.name) {
               hasIn = true
 
@@ -38,7 +42,7 @@ export function usePostList<T>({ initialQuery }: PostListSettings) {
             return sortItem
           })
 
-          const finalSort = newSort.concat(!hasIn ? [{ name: path }] : [])
+          const finalSort = newSort?.concat(!hasIn ? [{ name: path }] : [])
 
           return { ...prev, sort: finalSort, ...data.pager }
         })
@@ -53,6 +57,7 @@ export function usePostList<T>({ initialQuery }: PostListSettings) {
     setFetching,
     query,
     updateData: setData,
+    updateFilters,
     updatePage,
     updatePerPage,
     updateSort,

@@ -18,4 +18,5 @@ export interface ICreateProviderDTO {
   disableAt?: Date
   observations?: string
   companyId: string
+  informarGTIN: boolean
 }

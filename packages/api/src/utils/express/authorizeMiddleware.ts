@@ -15,7 +15,7 @@ export function authorizeAnonymous() {
       const [, token] = authHeader.split(' ')
 
       try {
-        const decoded = <TokenOperator>jwt.verify(token, process.env.APP_SECRET)
+        const decoded = <TokenOperator>jwt.verify(token, process.env.APP_SECRET!)
 
         request.user = decoded
         Sentry.setExtra('operator', decoded)
@@ -40,7 +40,7 @@ export function authorize(...roles: string[]) {
       const [, token] = authHeader.split(' ')
 
       try {
-        const decoded = <TokenOperator>jwt.verify(token, process.env.APP_SECRET)
+        const decoded = <TokenOperator>jwt.verify(token, process.env.APP_SECRET!)
 
         request.user = decoded
         Sentry.setExtra('operator', decoded)

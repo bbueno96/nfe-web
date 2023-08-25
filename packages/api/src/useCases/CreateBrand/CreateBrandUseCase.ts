@@ -1,9 +1,5 @@
-import { Prisma } from '@prisma/client'
-
-import { Brand } from '../../entities/Brand'
 import { BrandRepository } from '../../repositories/BrandRepository'
 import { ApiError } from '../../utils/ApiError'
-import { isCnpj, isCpf } from '../../utils/cpfCnpj'
 import { ICreateBrandDTO } from './CreateBrandDTO'
 
 export class CreateBrandUseCase {
@@ -23,11 +19,9 @@ export class CreateBrandUseCase {
     this.sanitizeData(data)
     await this.validate(data)
 
-    const brand = await this.brandRepository.create(
-      Brand.create({
-        ...data,
-      }),
-    )
+    const brand = await this.brandRepository.create({
+      ...data,
+    })
     return brand.id
   }
 }

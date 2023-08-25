@@ -1,64 +1,39 @@
-import { Prisma } from '@prisma/client'
-
+import { PrismaTransaction } from '../../prisma/types'
 import { prisma } from '../database/client'
 import { NfeProducts } from '../entities/NfeProducts'
 
 export class NfeProductsRepository {
-  async update(data: NfeProducts): Promise<NfeProducts> {
-    return await prisma.nfeProduto.update({
-      where: { id: data.id },
+  async update(id: string, data: Partial<NfeProducts>, prismaTransaction: PrismaTransaction) {
+    return await prismaTransaction.nfeProduto.update({
+      where: { id },
       data,
     })
   }
 
-  async create(data: any): Promise<NfeProducts> {
-    return await prisma.nfeProduto.create({ data })
+  create(data: NfeProducts, prismaTransaction: PrismaTransaction) {
+    return prismaTransaction.nfeProduto.create({ data })
   }
 
-  async findById(id: string): Promise<NfeProducts> {
-    return await prisma.nfeProduto.findUnique({
+  findById(id: string) {
+    return prisma.nfeProduto.findUnique({
       where: { id },
     })
   }
 
-  async findByNfe(nota: string): Promise<any[]> {
-    return await prisma.nfeProduto.findMany({
+  findByNfe(nota: string) {
+    return prisma.nfeProduto.findMany({
+      where: { nota },
+      select: { id: true, quantidade: true, Product: { select: { id: true, stock: true } } },
+    })
+  }
+
+  findByNfeAll(nota: string) {
+    return prisma.nfeProduto.findMany({
       where: { nota },
     })
   }
 
-  async remove(id: string): Promise<void> {
-    await prisma.$queryRaw`DELETE FROM nfe_produto WHERE "produto" = ${id}`
-  }
-
-  async list(filters: any): Promise<List<NfeProducts>> {
-    const { name, page, perPage, orderBy } = filters
-
-    const items = await prisma.nfeProduto.findMany({
-      where: {
-        descricao: { contains: name, mode: 'insensitive' },
-      },
-      skip: Number((page - 1) * perPage) || undefined,
-      take: perPage,
-      orderBy: {
-        descricao: orderBy as Prisma.SortOrder,
-      },
-    })
-
-    const records = await prisma.nfeProduto.count({
-      where: {
-        descricao: { contains: name },
-      },
-    })
-
-    return {
-      items,
-      pager: {
-        records,
-        page,
-        perPage,
-        pages: perPage ? Math.ceil(records / perPage) : 1,
-      },
-    }
+  async remove(nota: string, prismaTransaction: PrismaTransaction): Promise<void> {
+    await prismaTransaction.$queryRaw`DELETE FROM nfe_produto WHERE "nota" = ${nota}`
   }
 }

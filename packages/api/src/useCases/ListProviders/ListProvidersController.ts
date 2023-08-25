@@ -8,7 +8,7 @@ export class ListProvidersController {
   }
 
   async handle(request: Request, response: Response) {
-    const { cpfCnpj, name, page = 1, perPage = 10, orderBy, sort } = request.body
+    const { cpfCnpj, name, page = 1, perPage = 10, orderBy } = request.body
     const { companyId } = request.user
     const seller = await this.listProvidersUseCase.execute({
       cpfCnpj: cpfCnpj as string,

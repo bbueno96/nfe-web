@@ -1,5 +1,3 @@
-import { Readable } from 'stream'
-
 import { BANK } from '../../utils/getRetorno/const'
 import { parseRemessaCnab } from '../../utils/getRetorno/returnBankRemittance/return'
 

@@ -29,8 +29,8 @@ export class ListAccountPayableController {
       providerId,
       document,
       isPaid,
-      page: Number(page) || undefined,
-      perPage: Number(perPage) || undefined,
+      page,
+      perPage,
       orderBy: orderBy as string,
       companyId,
     })

@@ -1,34 +1,58 @@
 import { Prisma } from '@prisma/client'
 
+import { PrismaTransaction } from '../../prisma/types'
 import { prisma } from '../database/client'
 import { AccountPayable } from '../entities/AccountPayable'
+import { IListAccountPayableFilters } from '../useCases/ListAccountPayable/ListAccountPayableDTO'
 
+class DadosAccountPayable {
+  id?: string
+  createdAt: Date
+  description: string
+  dueDate: Date
+  value: Prisma.Decimal
+  discount: Prisma.Decimal
+  addition: Prisma.Decimal
+  numberInstallment: number
+  installments: number
+  providerId: string
+  document?: string | null
+  classificationId?: string
+  disabledAt?: Date | null
+  accountPaymentId?: string | null
+  providerName?: string | null
+  companyId?: string | null
+  classificationDescription?: string | null
+}
 export class AccountPayableRepository {
-  async update(data: AccountPayable): Promise<AccountPayable> {
-    return await prisma.accountPayable.update({
-      where: { id: data.id },
+  update(id: string, data: Partial<AccountPayable>, prismaTransaction: PrismaTransaction | null) {
+    const connection = prismaTransaction ?? prisma
+    return connection.accountPayable.update({
+      where: { id },
       data,
     })
   }
 
-  async create(data: AccountPayable): Promise<AccountPayable> {
-    return await prisma.accountPayable.create({ data })
+  create(data: AccountPayable, prismaTransaction: PrismaTransaction | null) {
+    const connection = prismaTransaction ?? prisma
+    return connection.accountPayable.create({ data })
   }
 
-  async findById(id: string): Promise<AccountPayable> {
-    return await prisma.accountPayable.findUnique({
+  findById(id: string) {
+    return prisma.accountPayable.findUnique({
       where: { id },
     })
   }
 
-  async remove(accountPayable: AccountPayable): Promise<void> {
-    await prisma.accountPayable.update({
+  async remove(accountPayable: AccountPayable, prismaTransaction: PrismaTransaction | null): Promise<void> {
+    const connection = prismaTransaction ?? prisma
+    await connection.accountPayable.update({
       where: { id: accountPayable.id },
       data: { disabledAt: new Date() },
     })
   }
 
-  async list(filters: any): Promise<List<any>> {
+  async list(filters: IListAccountPayableFilters): Promise<List<DadosAccountPayable>> {
     const {
       minCreatedAtDate,
       maxCreatedAtDate,
@@ -74,7 +98,7 @@ export class AccountPayableRepository {
     if (document) {
       where = {
         ...where,
-        document: { contains: document, mode: 'insensitive' },
+        document,
       }
     }
     if (isPaid !== null) {
@@ -85,7 +109,7 @@ export class AccountPayableRepository {
     }
     const items = await prisma.accountPayable.findMany({
       where,
-      skip: Number((page - 1) * perPage) || undefined,
+      skip: ((page ?? 1) - 1) * (perPage ?? 10),
       take: perPage,
       orderBy: {
         description: orderBy as Prisma.SortOrder,
@@ -102,13 +126,32 @@ export class AccountPayableRepository {
     const records = await prisma.accountPayable.count({
       where,
     })
-
     return {
-      items,
+      items: items.map(e => {
+        return {
+          id: e.id,
+          createdAt: e.createdAt,
+          description: e.description,
+          dueDate: e.dueDate,
+          value: e.value,
+          discount: e.discount,
+          addition: e.addition,
+          numberInstallment: e.numberInstallment,
+          installments: e.installments,
+          providerId: e.providerId,
+          document: e.document,
+          classificationId: e.classificationId,
+          disabledAt: e.disabledAt,
+          accountPaymentId: e.accountPaymentId,
+          providerName: e.providerName,
+          companyId: e.companyId,
+          classificationDescription: e.Classification.description,
+        }
+      }),
       pager: {
         records,
-        page,
-        perPage,
+        page: page ?? 1,
+        perPage: perPage ?? 10,
         pages: perPage ? Math.ceil(records / perPage) : 1,
       },
     }

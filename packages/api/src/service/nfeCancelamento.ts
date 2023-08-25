@@ -13,12 +13,11 @@ export async function nfeCancelamento(
   parameters: Parameter,
 ) {
   const serviceUrl = isDev ? 'https://homologacao.nfe.fazenda.sp.gov.br/ws' : 'https://nfe.fazenda.sp.gov.br/ws'
-
   try {
     const httpsAgent = new https.Agent({
       rejectUnauthorized: false,
       pfx: parameters.pfx,
-      passphrase: atob(parameters.passwordCert),
+      passphrase: atob(parameters.passwordCert || ''),
       ...cert,
     })
     const { data } = await axios.post(`${serviceUrl}/nferecepcaoevento4.asmx`, xmlData, {

@@ -1,4 +1,3 @@
-import { BankAccount } from '../../entities/BankAccount'
 import { BankAccountRepository } from '../../repositories/BankAccountRepository'
 import { ApiError } from '../../utils/ApiError'
 import { ICreateBankAccountDTO } from './CreateBankAccountDTO'
@@ -21,9 +20,10 @@ export class CreateBankAccountUseCase {
     await this.validate(data)
 
     const brand = await this.bankAccountRepository.create(
-      BankAccount.create({
+      {
         ...data,
-      }),
+      },
+      null,
     )
     return brand.id
   }

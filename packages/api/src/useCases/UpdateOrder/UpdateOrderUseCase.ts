@@ -1,9 +1,6 @@
 import { Prisma } from '@prisma/client'
 
-import { Order } from '../../entities/Order'
-import { OrderProducts } from '../../entities/OrderProducts'
-import { getCityCode } from '../../ibge/getCityCode'
-import { stateCode } from '../../ibge/state'
+import { PrismaTransaction } from '../../../prisma/types'
 import { OrderProductsRepository } from '../../repositories/OrderProductsRepository'
 import { OrderRepository } from '../../repositories/OrderRepository'
 import { ParameterRepository } from '../../repositories/ParameterRepository'
@@ -23,7 +20,7 @@ export class UpdateOrderUseCase {
     }
   }
 
-  async execute(data: IUpdateOrderDTO) {
+  async execute(data: IUpdateOrderDTO, prismaTransaction: PrismaTransaction) {
     const oldData = await this.orderRepository.findById(data.id)
 
     if (!oldData) {
@@ -34,27 +31,35 @@ export class UpdateOrderUseCase {
     const parameter = await this.parameterRepository.getParameter(data.companyId)
 
     await this.orderRepository.update(
-      Order.create({
-        ...data,
+      oldData.id,
+      {
         numberOrder: oldData.numberOrder,
+        obs: data.obs,
+        status: data.status,
+        customerApoioProperty: data.customerApoioProperty,
         total: new Prisma.Decimal(data.total),
         discount: new Prisma.Decimal(data.discount),
         shipping: new Prisma.Decimal(data.shipping),
-        cityIdApoio: parameter.getApoio ? data.cityIdApoio : null,
-      }),
+        cityIdApoio: parameter?.getApoio ? data.cityIdApoio : null,
+      },
+      prismaTransaction,
     )
     await this.orderProductsRepository.remove(data.id)
-    data.products.forEach(async Product => {
-      await this.orderProductsRepository.create(
-        OrderProducts.create({
-          orderId: data.id,
-          ...Product,
-          total: new Prisma.Decimal(Product.total),
-          amount: new Prisma.Decimal(Product.amount),
-          unitary: new Prisma.Decimal(Product.unitary),
-          companyId: data.companyId,
-        }),
-      )
-    })
+    const regs = data.products
+    await Promise.all(
+      regs.map(async reg => {
+        await this.orderProductsRepository.create(
+          {
+            orderId: data.id,
+            total: reg.total,
+            amount: reg.amount,
+            unitary: reg.unitary,
+            companyId: data.companyId,
+            productId: reg.productId,
+          },
+          prismaTransaction,
+        )
+      }),
+    )
   }
 }

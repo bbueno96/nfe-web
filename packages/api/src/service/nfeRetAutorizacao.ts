@@ -21,7 +21,6 @@ export async function nfeRetAutorizacao(xmlData: string, isDev: boolean, cert: p
       ignoreAttrs: true,
       tagNameProcessors: [xml2js.processors.stripPrefix],
     })
-
     const { retConsReciNFe } = response.Body.nfeResultMsg
     return retConsReciNFe
   } catch (err) {

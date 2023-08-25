@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 
+import { prisma } from '../../prisma'
 import { CreateInstallmentUseCase } from './CreateInstallmentUseCase'
 
 export class CreateInstallmentController {
@@ -7,7 +8,7 @@ export class CreateInstallmentController {
     this.handle = this.handle.bind(this)
   }
 
-  async handle(request: Request, response: Response) {
+  handle(request: Request, response: Response) {
     const {
       numeroDoc,
       customerId,
@@ -34,34 +35,38 @@ export class CreateInstallmentController {
       Customer,
     } = request.body
     const { companyId, id: employeeId } = request.user
-
-    const accountPayable = await this.CreateInstallmentUseCase.execute({
-      numeroDoc,
-      customerId,
-      numberInstallment,
-      dueDate,
-      value,
-      createdAt,
-      classificationId,
-      discount,
-      addition,
-      bankAccountId,
-      bankSlip,
-      customerApoioId,
-      installments,
-      subAccounts,
-      customerApoioName,
-      cpfCnpjApoio,
-      phoneApoio,
-      postalCodeApoio,
-      addressApoio,
-      stateApoio,
-      cityApoio,
-      stateInscriptionApoio,
-      employeeId,
-      companyId,
-      Customer,
+    return prisma.$transaction(async prismaTransaction => {
+      const accountPayable = await this.CreateInstallmentUseCase.execute(
+        {
+          numeroDoc,
+          customerId,
+          numberInstallment,
+          dueDate,
+          value,
+          createdAt,
+          classificationId,
+          discount,
+          addition,
+          bankAccountId,
+          bankSlip,
+          customerApoioId,
+          installments,
+          subAccounts,
+          customerApoioName,
+          cpfCnpjApoio,
+          phoneApoio,
+          postalCodeApoio,
+          addressApoio,
+          stateApoio,
+          cityApoio,
+          stateInscriptionApoio,
+          employeeId,
+          companyId,
+          Customer,
+        },
+        prismaTransaction,
+      )
+      return response.status(201).json({ accountPayable })
     })
-    return response.status(201).json({ accountPayable })
   }
 }

@@ -1,4 +1,3 @@
-import { Admin } from '../../entities/Admin'
 import { AdminRepository } from '../../repositories/AdminRepository'
 import { ApiError } from '../../utils/ApiError'
 import { ICreateAdminDTO } from './CreateAdminDTO'
@@ -27,8 +26,7 @@ export class CreateAdminUseCase {
     this.sanitizeData(data)
     this.validate(data)
 
-    const admin = Admin.create(data)
-    await this.adminRepository.create(admin)
+    const admin = await this.adminRepository.create(data)
 
     return admin.id
   }

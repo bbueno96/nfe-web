@@ -1,28 +1,27 @@
-import { Prisma } from '@prisma/client'
-
 import { prisma } from '../database/client'
 import { ProviderProducts } from '../entities/ProviderProducts'
+import { IListProvidersFilters } from '../useCases/ListProviders/ListProvidersDTO'
 
 export class ProviderProductsRepository {
-  async update(data: ProviderProducts): Promise<ProviderProducts> {
-    return await prisma.providerProducts.update({
-      where: { id: data.id },
+  update(id: string, data: Partial<ProviderProducts>) {
+    return prisma.providerProducts.update({
+      where: { id },
       data,
     })
   }
 
-  async create(data: ProviderProducts): Promise<ProviderProducts> {
-    return await prisma.providerProducts.create({ data })
+  create(data: ProviderProducts) {
+    return prisma.providerProducts.create({ data })
   }
 
-  async findById(id: string): Promise<ProviderProducts> {
-    return await prisma.providerProducts.findUnique({
+  findById(id: string) {
+    return prisma.providerProducts.findUnique({
       where: { id },
     })
   }
 
-  async findByProvider(id: string, companyId: string): Promise<ProviderProducts> {
-    return await prisma.providerProducts.findFirst({
+  findByProvider(id: string, companyId: string) {
+    return prisma.providerProducts.findFirst({
       where: { productIdProvider: { contains: id, mode: 'insensitive' }, companyId },
     })
   }
@@ -34,14 +33,14 @@ export class ProviderProductsRepository {
     })
   }
 
-  async list(filters: any): Promise<List<ProviderProducts>> {
-    const { companyId, description, page, perPage, orderBy } = filters
+  async list(filters: IListProvidersFilters): Promise<List<ProviderProducts>> {
+    const { companyId, page, perPage } = filters
 
     const items = await prisma.providerProducts.findMany({
       where: {
         companyId,
       },
-      skip: Number((page - 1) * perPage) || undefined,
+      skip: ((page ?? 1) - 1) * (perPage ?? 10),
       take: perPage,
     })
 
@@ -55,8 +54,8 @@ export class ProviderProductsRepository {
       items,
       pager: {
         records,
-        page,
-        perPage,
+        page: page ?? 1,
+        perPage: perPage ?? 10,
         pages: perPage ? Math.ceil(records / perPage) : 1,
       },
     }

@@ -14,7 +14,6 @@ export class LoginAdminController {
       login,
       password,
     })
-
     return response.json(data)
   }
 }

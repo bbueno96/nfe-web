@@ -8,15 +8,28 @@ export class ListNfeController {
   }
 
   async handle(request: Request, response: Response) {
-    const { cpfCnpj, name, page = 1, perPage = 10, orderBy, sort, tipo } = request.body
+    const {
+      cpfCnpj,
+      minDate,
+      maxDate,
+      name,
+      customerApoioProperty,
+      page = 1,
+      perPage = 10,
+      orderBy,
+      tipo,
+    } = request.body
     const { companyId } = request.user
     const seller = await this.listNfeUseCase.execute({
       cpfCnpj: cpfCnpj as string,
       companyId,
       tipo,
+      minDate,
+      maxDate,
+      customerApoioProperty,
       name: name as string,
-      page: Number(page) || undefined,
-      perPage: Number(perPage) || undefined,
+      page,
+      perPage,
       orderBy: orderBy as string,
     })
     return response.json(seller)

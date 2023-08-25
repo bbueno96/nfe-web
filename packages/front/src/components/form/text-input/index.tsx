@@ -27,9 +27,9 @@ interface TextInputProps
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const Input = forwardRef<never, TextInputProps>(({ mask, value, children, ...props }, ref) =>
   mask ? (
-    <InputMask {...props} ref={ref} mask={mask instanceof Function ? mask(value) : mask} value={value} />
+    <InputMask {...props} ref={ref} mask={mask instanceof Function ? mask(value || '') : mask} value={value || ''} />
   ) : (
-    <input {...props} ref={ref} value={value} />
+    <input {...props} ref={ref} value={value || ''} />
   ),
 )
 
@@ -54,7 +54,7 @@ export const TextInput = forwardRef<never, TextInputProps>(
     },
     ref,
   ) => {
-    const [field, meta] = useField(id || name)
+    const [field, meta] = useField<string | undefined | null>(id || name || '')
     const handleBlur = useEventCallback<React.FocusEventHandler<HTMLInputElement>>(ev => {
       field.onBlur(ev)
       if (onBlur) onBlur(ev)
@@ -84,7 +84,7 @@ export const TextInput = forwardRef<never, TextInputProps>(
             onChange={field.onChange}
             onBlur={handleBlur}
             onKeyDown={ev => ev.key === 'Enter' && !acceptEnter && ev.preventDefault()}
-            value={field.value}
+            value={field.value ?? ''}
           />
 
           {icon && (

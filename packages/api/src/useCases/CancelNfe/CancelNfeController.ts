@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 
+import { prisma } from '../../prisma'
 import { CancelNfeUseCase } from './CancelNfeUseCase'
 
 export class CancelNfeController {
@@ -7,14 +8,20 @@ export class CancelNfeController {
     this.handle = this.handle.bind(this)
   }
 
-  async handle(request: Request, response: Response) {
-    const { companyId } = request.user
+  handle(request: Request, response: Response) {
+    const { companyId, id: employeeId } = request.user
     const { id } = request.params
 
-    const cancel = await this.CancelNfeUseCase.execute({
-      id,
-      companyId,
+    return prisma.$transaction(async prismaTransaction => {
+      const cancel = await this.CancelNfeUseCase.execute(
+        {
+          id,
+          companyId,
+          employeeId,
+        },
+        prismaTransaction,
+      )
+      return response.status(201).json({ cancel })
     })
-    return response.status(201).json({ cancel })
   }
 }

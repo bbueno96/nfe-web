@@ -52,7 +52,7 @@ export const Panel = ({ type, home, pages, userPages = [], routes = [] }: PanelP
   const [userOpened, setUserOpened] = useState(false)
   const [sidebarOpened, setSidebarOpened] = useState(false)
   const [topbarOpened, setTopbarOpened] = useState(false)
-  const panelTitle = /** city ? city.fullName : */ app.parameter.nfeRazao
+  const panelTitle = /** city ? city.fullName : */ app.parameter?.nfeRazao
 
   const closeUserMenu = useCallback(() => setUserOpened(false), [setUserOpened])
 
@@ -61,8 +61,11 @@ export const Panel = ({ type, home, pages, userPages = [], routes = [] }: PanelP
   const hasBoxRef = Boolean(boxRef.current)
   const sidebarHeight = useMemo(() => {
     if (hasBoxRef) {
-      const box = boxRef.current
-      return windowSize.width > 1000 ? box.offsetHeight - 30 : windowSize.height
+      // const box = boxRef.current
+      const wSize = windowSize.height
+      // if (boxRef?.current?.offsetHeight)
+      //  wSize = (windowSize?.width || 0) > 1000 ? box.offsetHeight - 30 : windowSize.height
+      return wSize
     }
 
     return 'auto'
@@ -77,9 +80,9 @@ export const Panel = ({ type, home, pages, userPages = [], routes = [] }: PanelP
   const allPages = pages
     .concat(userPages)
     .concat(routes)
-    .filter(({ roles }) => !roles || (roles && operator.roles && operator.roles.map(role => roles.includes(role))))
+    .filter(({ roles }) => !roles || (roles && operator?.roles && operator.roles.map(role => roles.includes(role))))
     .flatMap(i => ('pages' in i ? i.pages : i))
-    .filter(p => !firstOrSelf(p.path).match('https?://'))
+    .filter(p => !firstOrSelf(p?.path || '').match('https?://'))
 
   const now = new Date()
 
@@ -140,10 +143,10 @@ export const Panel = ({ type, home, pages, userPages = [], routes = [] }: PanelP
                     <div className="kt-header__topbar-wrapper">
                       <span className="kt-header__topbar-welcome kt-visible-desktop">Olá,</span>
                       <span className="kt-header__topbar-username kt-visible-desktop">
-                        {operator.name.split(' ')[0]}
+                        {operator?.name?.split(' ')[0]}
                       </span>
                       <span className="kt-header__topbar-icon kt-bg-brand">
-                        <b>{operator.name.charAt(0)}</b>
+                        <b>{operator?.name?.charAt(0)}</b>
                       </span>
                     </div>
                     <div
@@ -155,10 +158,10 @@ export const Panel = ({ type, home, pages, userPages = [], routes = [] }: PanelP
                       <div className="kt-user-card kt-user-card--skin-light kt-notification-item-padding-x">
                         <div className="kt-user-card__avatar">
                           <span className="kt-badge kt-badge--username kt-badge--lg kt-badge--rounded kt-badge--bold">
-                            {operator.name.charAt(0)}
+                            {operator?.name?.charAt(0)}
                           </span>
                         </div>
-                        <div className="kt-user-card__name">{operator.name}</div>
+                        <div className="kt-user-card__name">{operator?.name}</div>
                       </div>
                       <div className="kt-notification">
                         {userPages.map(up => (
@@ -227,7 +230,7 @@ export const Panel = ({ type, home, pages, userPages = [], routes = [] }: PanelP
                       {pages
                         .filter(
                           ({ roles }) =>
-                            !roles || (roles && operator.roles && operator.roles.map(role => roles.includes(role))),
+                            !roles || (roles && operator?.roles && operator?.roles.map(role => roles.includes(role))),
                         )
                         .map(p =>
                           'pages' in p ? (
@@ -256,10 +259,10 @@ export const Panel = ({ type, home, pages, userPages = [], routes = [] }: PanelP
                     <Route index element={home} />
 
                     {allPages.map(pg =>
-                      typeof pg.path === 'string' ? (
+                      typeof pg?.path === 'string' ? (
                         <Route key={pg.path} path={pg.path} element={pg.element} />
                       ) : (
-                        pg.path.map(singlePath => <Route key={singlePath} path={singlePath} element={pg.element} />)
+                        pg?.path?.map(singlePath => <Route key={singlePath} path={singlePath} element={pg.element} />)
                       ),
                     )}
 

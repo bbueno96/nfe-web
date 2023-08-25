@@ -41,7 +41,7 @@ export class UpdateProviderUseCase {
     if (!provider) {
       throw new ApiError('Fornecedor não encontrado.', 404)
     }
-    await this.providerRepository.update({
+    await this.providerRepository.update(provider.id, {
       ...data,
       dateCreated: new Date(),
     })

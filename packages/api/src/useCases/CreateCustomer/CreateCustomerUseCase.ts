@@ -1,6 +1,3 @@
-import { Prisma } from '@prisma/client'
-
-import { Customer } from '../../entities/Customer'
 import { CustomerRepository } from '../../repositories/CustomerRepository'
 import { ApiError } from '../../utils/ApiError'
 import { isCnpj, isCpf } from '../../utils/cpfCnpj'
@@ -33,11 +30,9 @@ export class CreateCustomerUseCase {
     this.sanitizeData(data)
     await this.validate(data)
 
-    const customer = await this.customerRepository.create(
-      Customer.create({
-        ...data,
-      }),
-    )
+    const customer = await this.customerRepository.create({
+      ...data,
+    })
     return customer.id
   }
 }

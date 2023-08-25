@@ -6,8 +6,8 @@ import { NfeRepository } from '../../repositories/NfeRepository'
 import { ParameterRepository } from '../../repositories/ParameterRepository'
 import { PayMethodsRepository } from '../../repositories/PayMethodRepository'
 import { ProductRepository } from '../../repositories/ProductRepository'
+import { ProductTaxRepository } from '../../repositories/ProductTaxRepository'
 import { StockProductsRepository } from '../../repositories/StockProductsRepository'
-import { TaxSituationsRepository } from '../../repositories/TaxSituationsRepository'
 import { UpdateNfeController } from './UpdateNfeController'
 import { UpdateNfeUseCase } from './UpdateNfeUseCase'
 
@@ -16,7 +16,7 @@ const customerRepository = new CustomerRepository()
 const nfeProductsRepository = new NfeProductsRepository()
 const parameterRepository = new ParameterRepository()
 const productRepository = new ProductRepository()
-const taxSituationsRepository = new TaxSituationsRepository()
+const productTaxRepository = new ProductTaxRepository()
 const installmentRepository = new InstallmentRepository()
 const payMethodsRepository = new PayMethodsRepository()
 const bankAccountRepository = new BankAccountRepository()
@@ -27,7 +27,7 @@ const updateNfeUseCase = new UpdateNfeUseCase(
   customerRepository,
   productRepository,
   nfeProductsRepository,
-  taxSituationsRepository,
+  productTaxRepository,
   parameterRepository,
   installmentRepository,
   payMethodsRepository,

@@ -13,7 +13,6 @@ import { Field } from '../../components/form/field'
 import { Select } from '../../components/form/select'
 import { TextInput } from '../../components/form/text-input'
 import { List, ListColumn } from '../../components/list'
-import { getCustomers } from '../../helpers'
 import { Cities, RequiredMessage, customerTypes } from '../../helpers/constants'
 import { onlyNumbers, getAddress } from '../../helpers/format'
 import { maskCpfCnpj } from '../../helpers/mask'
@@ -36,7 +35,7 @@ interface CustomerListValues {
   complement: string
   province: string
   postalCode: string
-  disableAt: Date
+  disabledAt?: Date
   type: number
 }
 interface AddressForm {
@@ -67,7 +66,7 @@ interface CustomerFormValues {
   postalCode: string
   cityId: number
   state: string
-  disableAt: Date
+  disabledAt?: Date
   view: string
   deliveryAddress: AddressForm
   type: number
@@ -83,21 +82,49 @@ export const CustomerList = () => {
   })
 
   const { fetching, items, pager, setFetching, query, updateData, updatePage, updatePerPage, updateSort } =
-    usePostList<CustomerListValues>({ initialQuery: { sort: [{ name: 'id' }] } })
+    usePostList<CustomerListValues>({ initialQuery: {} })
   useEffect(() => {
     setFetching(true)
-    if (parameter.getApoio) {
-      getCustomers()
-        .then(resp => {
-          updateData({ items: resp, pager: { records: resp.length, page: 1, perPage: 10, pages: resp.length / 10 } })
+    if (parameter?.getApoio) {
+      fetch(`https://apoiogenetica.sistemaexpert.com.br/api/customer.list.public?&search=${filter.values.name}`)
+        .then(r => r.json())
+        .then(respAllreg => {
+          fetch(
+            `https://apoiogenetica.sistemaexpert.com.br/api/customer.list.public?&search=${
+              filter.values.name
+            }&perPage=${query.perPage ? query.perPage : 10}&page=${query.page ? query.page : 1}`,
+          )
+            .then(r => r.json())
+            .then(resp => {
+              updateData({
+                items: resp,
+                pager: {
+                  records: respAllreg.length,
+                  page: query.page ? query.page : 1,
+                  perPage: query.perPage ? query.perPage : 10,
+                  pages: respAllreg.length / (query.perPage ? query.perPage : 10),
+                  usePager: true,
+                },
+              })
+            })
+            .catch(err => modal?.alert(err.message))
+            .finally(() => setFetching(false))
         })
-        .catch(err => modal.alert(err.message))
+        .catch(err => modal?.alert(err.message))
         .finally(() => setFetching(false))
     } else {
       axios
-        .post('customer.list', query, { headers: { Authorization: `Bearer ${saToken}` } })
+        .post(
+          'customer.list',
+          {
+            ...query,
+            name: filter.values.name,
+            cpfCnpj: filter.values.cpfCnpj,
+          },
+          { headers: { Authorization: `Bearer ${saToken}` } },
+        )
         .then(({ data }) => updateData(data))
-        .catch(err => modal.alert(err.message))
+        .catch(err => modal?.alert(err.message))
         .finally(() => setFetching(false))
     }
   }, [query, refresh.ref])
@@ -113,7 +140,7 @@ export const CustomerList = () => {
             <h3 className="kt-portlet__head-title">Clientes</h3>
           </div>
           <div className="kt-portlet__head-toolbar">
-            {!parameter.getApoio && (
+            {!parameter?.getApoio && (
               <div className="kt-portlet__head-wrapper">
                 <div className="dropdown dropdown-inline">
                   <Link className="btn btn-success btn-icon-sm" to="cadastro">
@@ -141,38 +168,10 @@ export const CustomerList = () => {
                   </div>
                 </Field>
               </div>
-              <div className="col-lg">
-                <Field label="CPF/CNPJ">
-                  <div className="input-icon">
-                    <input
-                      type="search"
-                      name="cpfCnpj"
-                      placeholder="Pesquisar..."
-                      className="form-control"
-                      onChange={filter.handleChange}
-                      value={onlyNumbers(filter.values.cpfCnpj)}
-                    />
-                  </div>
-                </Field>
-              </div>
             </div>
             <div className="row">
               <div className="col-lg kt-align-right">
-                <Button
-                  icon="input-icon"
-                  customClassName="btn-primary"
-                  title="Consultar"
-                  onClick={() => {
-                    setFetching(true)
-                    axios
-                      .post('customer.list', filter.values, {
-                        headers: { Authorization: `Bearer ${saToken}` },
-                      })
-                      .then(({ data }) => updateData(data))
-                      .catch(err => modal.alert(err.message))
-                      .finally(() => setFetching(false))
-                  }}
-                />
+                <Button icon="input-icon" customClassName="btn-primary" title="Consultar" onClick={refresh.force} />
               </div>
             </div>
           </form>
@@ -190,37 +189,37 @@ export const CustomerList = () => {
             sortItems={query.sort}
             columns={listColumns}
             actions={
-              !parameter.getApoio
+              !parameter?.getApoio
                 ? [
                     { icon: 'fas fa-edit', title: 'Editar', action: '/cliente/:id' },
                     {
                       icon: 'fas fa-lock',
                       title: 'Desativar',
-                      hideWhen: ent => !!ent.disableAt,
+                      hideWhen: ent => !!ent.disabledAt,
                       action: ent =>
-                        modal.confirm(
+                        modal?.confirm(
                           `Deseja remover o cliente: ${ent.name}?`,
                           confirmed =>
                             confirmed &&
                             axios
                               .delete(`customer.delete/${ent.id}`, { headers: { Authorization: `Bearer ${saToken}` } })
                               .then(refresh.force)
-                              .catch(err => modal.alert(err.message)),
+                              .catch(err => modal?.alert(err.message)),
                         ),
                     },
                     {
                       icon: 'fas fa-unlock',
                       title: 'Ativar',
-                      hideWhen: ent => !ent.disableAt,
+                      hideWhen: ent => !ent.disabledAt,
                       action: ent =>
-                        modal.confirm(
+                        modal?.confirm(
                           `Deseja Ativar o cliente: ${ent.name}?`,
                           confirmed =>
                             confirmed &&
                             axios
                               .delete(`customer.delete/${ent.id}`, { headers: { Authorization: `Bearer ${saToken}` } })
                               .then(refresh.force)
-                              .catch(err => modal.alert(err.message)),
+                              .catch(err => modal?.alert(err.message)),
                         ),
                     },
                   ]
@@ -343,7 +342,7 @@ export const RenderInitial = ({ form, entity, id }) => {
               onChange={t => form.setFieldValue('type', t?.id)}
               disabled={false}
               isMulti={undefined}
-              isLoading={false}
+              isLoading={false || undefined}
               isClearable={true}
               styles={undefined}
             />
@@ -395,7 +394,7 @@ export const RenderInitial = ({ form, entity, id }) => {
               onChange={city => form.setFieldValue('cityId', city.id)}
               disabled={false}
               isMulti={undefined}
-              isLoading={false}
+              isLoading={false || undefined}
               isClearable={true}
               styles={undefined}
             />
@@ -477,7 +476,7 @@ export const AddressForm = ({ entity, form }) => {
               onChange={city => form.setFieldValue('deliveryAddress.cityId', city.id)}
               disabled={false}
               isMulti={undefined}
-              isLoading={false}
+              isLoading={false || undefined}
               isClearable={true}
               styles={undefined}
             />
@@ -522,9 +521,9 @@ export const CustomerForm = () => {
       complement: '',
       province: '',
       postalCode: '',
-      cityId: null,
+      cityId: 0,
       state: '',
-      disableAt: null,
+      disabledAt: undefined,
       view: 'Geral',
       deliveryAddress: {
         id: 0,
@@ -532,7 +531,7 @@ export const CustomerForm = () => {
         addressNumber: '',
         complement: '',
         postalCode: '',
-        cityId: null,
+        cityId: 0,
         state: '',
         province: '',
       },
@@ -583,7 +582,7 @@ export const CustomerForm = () => {
           form.setFieldValue('asaasId', data.asaasId)
           form.setFieldValue('company', data.company)
         })
-        .catch(err => modal.alert(err.message))
+        .catch(err => modal?.alert(err.message))
         .finally()
     }
   }, [id])

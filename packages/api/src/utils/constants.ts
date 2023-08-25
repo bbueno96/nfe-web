@@ -5600,3 +5600,15 @@ export const stateCode = {
   28: 'SE',
   17: 'TO',
 }
+
+export const PaymentMean = [
+  { id: 1, description: 'Boleto' },
+  { id: 2, description: 'Pix' },
+  { id: 3, description: 'TED' },
+  { id: 4, description: 'DOC' },
+  { id: 5, description: 'Dinheiro' },
+  { id: 7, description: 'Cartão de Crédito' },
+  { id: 8, description: 'Cartão de Débito' },
+  { id: 9, description: 'Cartão Parcelado' },
+  { id: 10, description: 'Boleto Parcelado' },
+]

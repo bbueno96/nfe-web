@@ -1,67 +1,107 @@
 import { BankRemittance, Prisma } from '@prisma/client'
 
+import { PrismaTransaction } from '../../prisma/types'
 import { prisma } from '../database/client'
 import { Installment } from '../entities/Installment'
 import { IListInstallmentFilters } from '../useCases/ListInstallments/ListInstallmentsDTO'
 
+class DadosInstallment {
+  id: string
+  numeroDoc?: string | null
+  numberInstallment: number
+  paid: boolean
+  value?: Prisma.Decimal | null
+  dueDate: Date
+  customerId?: string | null
+  customerName?: string | null
+  nfeId?: string | null
+  nfe?: number | null
+  fine?: Prisma.Decimal | null
+  interest?: Prisma.Decimal | null
+  paymentMethodId?: string | null
+  paymentMethodName?: string | null
+  companyId?: string | null
+  createdAt: Date
+  ourNumber?: string | null
+  bankRemittanceId?: string | null
+}
+
+class DadosBankRem {
+  id: string
+  createdAt: Date
+  bankAccountDescription?: string | null
+  numberLot?: number | null
+  conteudo?: string | null
+  companyId?: string | null
+  bankAccountId?: string | null
+  wallet?: number | null
+}
+
 export class InstallmentRepository {
-  async update(data: Installment): Promise<Installment> {
-    return await prisma.installment.update({
-      where: { id: data.id },
+  update(id: string, data: Partial<Installment>, prismaTransaction: PrismaTransaction | null) {
+    const connection = prismaTransaction ?? prisma
+    return connection.installment.update({
+      where: { id },
       data,
     })
   }
 
-  async create(data: Installment): Promise<Installment> {
-    return await prisma.installment.create({ data })
+  create(data: Installment, prismaTransaction: PrismaTransaction | null) {
+    const connection = prismaTransaction ?? prisma
+    return connection.installment.create({ data })
   }
 
-  async findById(id: string): Promise<Installment> {
-    return await prisma.installment.findUnique({
+  findById(id: string) {
+    return prisma.installment.findUnique({
       where: { id },
     })
   }
 
-  async findByNfe(nfeId: string): Promise<any> {
-    return await prisma.installment.findMany({
+  findByNfe(nfeId: string) {
+    return prisma.installment.findMany({
       where: { nfeId },
     })
   }
 
-  async saveLot(data: BankRemittance): Promise<BankRemittance> {
-    return await prisma.bankRemittance.create({ data })
+  saveLot(data: BankRemittance, prismaTransaction: PrismaTransaction | null) {
+    const connection = prismaTransaction ?? prisma
+    return connection.bankRemittance.create({ data })
   }
 
-  async remove(installment: Installment): Promise<void> {
-    await prisma.installment.update({
+  async remove(installment: Installment, prismaTransaction: PrismaTransaction | null): Promise<void> {
+    const connection = prismaTransaction ?? prisma
+    await connection.installment.update({
       where: { id: installment.id },
       data: { disabledAt: new Date() },
     })
   }
 
-  async removeByNfe(nfeId: string): Promise<void> {
-    await prisma.$queryRaw`UPDATE installment SET "disabledAt"=${new Date()} WHERE "nfeId" = ${nfeId}`
-    await prisma.$queryRaw`DELETE FROM bank_slip_storege WHERE "nfeId" = ${nfeId}`
+  async removeByNfe(nfeId: string, prismaTransaction: PrismaTransaction | null): Promise<void> {
+    const connection = prismaTransaction ?? prisma
+    await connection.$queryRaw`UPDATE installment SET "disabledAt"=${new Date()} WHERE "nfeId" = ${nfeId}`
+    await connection.$queryRaw`DELETE FROM bank_slip_storege WHERE "nfeId" = ${nfeId}`
   }
 
-  async createBankSpliStorage(data): Promise<any> {
-    return await prisma.bankSlipStorege.create({ data })
+  createBankSpliStorage(data, prismaTransaction: PrismaTransaction | null) {
+    const connection = prismaTransaction ?? prisma
+    return connection.bankSlipStorege.create({ data })
   }
 
-  async getBankSpliByNfe(nfeId: string): Promise<any> {
-    return await prisma.bankSlipStorege.findMany({ where: { nfeId } })
+  getBankSpliByNfe(nfeId: string, prismaTransaction: PrismaTransaction | null) {
+    const connection = prismaTransaction ?? prisma
+    return connection.bankSlipStorege.findMany({ where: { nfeId } })
   }
 
-  async getBankSpliByInstallment(installmentId: string): Promise<any> {
-    return await prisma.bankSlipStorege.findMany({ where: { installmentId } })
+  getBankSpliByInstallment(installmentId: string, prismaTransaction: PrismaTransaction | null) {
+    const connection = prismaTransaction ?? prisma
+    return connection.bankSlipStorege.findMany({ where: { installmentId } })
   }
 
-  async list(filters: IListInstallmentFilters): Promise<List<Installment>> {
+  async list(filters: IListInstallmentFilters): Promise<List<DadosInstallment>> {
     const {
       companyId,
       page,
       perPage,
-      orderBy,
       maxDueDate,
       minDueDate,
       paymentMethodId,
@@ -69,7 +109,7 @@ export class InstallmentRepository {
       minCreatedAtDate,
       maxCreatedAtDate,
       isPaid,
-      document,
+      numeroDoc,
       bankRemittanceId,
       ourNumer,
       bankAccountId,
@@ -126,10 +166,10 @@ export class InstallmentRepository {
         paid: { equals: isPaid },
       }
     }
-    if (document) {
+    if (numeroDoc) {
       where = {
         ...where,
-        numeroDoc: { contains: document, mode: 'insensitive' },
+        numeroDoc,
       }
     }
     if (bankRemittanceId) {
@@ -175,7 +215,7 @@ export class InstallmentRepository {
 
     const items = await prisma.installment.findMany({
       where,
-      skip: Number((page - 1) * perPage) || undefined,
+      skip: ((page ?? 1) - 1) * (perPage ?? 10),
       take: perPage,
       orderBy: {
         createdAt: 'desc',
@@ -194,7 +234,6 @@ export class InstallmentRepository {
     const records = await prisma.installment.count({
       where,
     })
-
     return {
       items: items.map(e => {
         return {
@@ -202,14 +241,14 @@ export class InstallmentRepository {
           numeroDoc: e.numeroDoc,
           numberInstallment: e.numberInstallment,
           paid: e.paid,
-          value: e.value,
+          value: new Prisma.Decimal(e.value || 0),
           dueDate: e.dueDate,
           customerId: e.customerId,
           customerName: e.Customer ? e.Customer.name : e.customerApoioName,
           nfeId: e.nfeId,
           nfe: e.Nfe?.numeroNota,
-          fine: e.fine,
-          interest: e.interest,
+          fine: new Prisma.Decimal(e.fine || 0),
+          interest: new Prisma.Decimal(e.interest || 0),
           paymentMethodId: e.paymentMethodId,
           paymentMethodName: e.PayMethod?.description,
           companyId: e.companyId,
@@ -220,15 +259,15 @@ export class InstallmentRepository {
       }),
       pager: {
         records,
-        page,
-        perPage,
+        page: page ?? 1,
+        perPage: perPage ?? 10,
         pages: perPage ? Math.ceil(records / perPage) : 1,
       },
     }
   }
 
-  async listLot(filters): Promise<List<BankRemittance>> {
-    const { companyId, page, perPage, orderBy, numberLot } = filters
+  async listLot(filters): Promise<List<DadosBankRem>> {
+    const { companyId, page, perPage, orderBy, numberLot, bankAccountId, minCreatedAtDate, maxCreatedAtDate } = filters
     let where = {}
     where = {
       ...where,
@@ -242,12 +281,29 @@ export class InstallmentRepository {
       }
     }
 
+    if (bankAccountId) {
+      where = {
+        ...where,
+        bankAccountId: { equals: bankAccountId },
+      }
+    }
+
+    if (minCreatedAtDate && maxCreatedAtDate) {
+      where = {
+        ...where,
+        createdAt: {
+          gte: minCreatedAtDate,
+          lte: maxCreatedAtDate,
+        },
+      }
+    }
+
     const items = await prisma.bankRemittance.findMany({
       where,
-      skip: Number((page - 1) * perPage) || undefined,
+      skip: ((page ?? 1) - 1) * (perPage ?? 10),
       take: perPage,
       orderBy: {
-        numberLot: orderBy as Prisma.SortOrder,
+        createdAt: orderBy as Prisma.SortOrder,
       },
       include: { BankAccount: true },
     })
@@ -261,7 +317,7 @@ export class InstallmentRepository {
         return {
           id: e.id,
           createdAt: e.createdAt,
-          bankAccountDescription: e.BankAccount.description,
+          bankAccountDescription: e.BankAccount?.description,
           numberLot: e.numberLot,
           conteudo: e.conteudo,
           companyId: e.companyId,

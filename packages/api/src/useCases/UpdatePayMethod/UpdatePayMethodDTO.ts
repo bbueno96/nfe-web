@@ -1,5 +1,3 @@
-import { Prisma } from '@prisma/client'
-
 export interface IUpdatePayMethodDTO {
   id: string
   description: string

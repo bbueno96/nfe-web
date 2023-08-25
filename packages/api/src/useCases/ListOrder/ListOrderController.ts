@@ -8,13 +8,16 @@ export class ListOrderController {
   }
 
   async handle(request: Request, response: Response) {
-    const { description, page = 1, perPage = 10, orderBy } = request.body
+    const { description, cpfCnpj, customerApoioProperty, name, page = 1, perPage = 10, orderBy } = request.body
     const { companyId } = request.user
     const order = await this.listOrderUseCase.execute({
       customer: description as string,
+      cpfCnpj: cpfCnpj as string,
+      name: name as string,
+      customerApoioProperty,
       companyId,
-      page: Number(page) || undefined,
-      perPage: Number(perPage) || undefined,
+      page,
+      perPage,
       orderBy: orderBy as string,
     })
     return response.json(order)

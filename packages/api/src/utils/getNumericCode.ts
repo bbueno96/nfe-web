@@ -1,5 +1,5 @@
 export function getNumericCode(length = 8): string {
-  const numbers = []
+  const numbers: number[] = []
 
   for (let index = 0; index < length; index++) {
     numbers.push(Math.floor(Math.random() * 10))

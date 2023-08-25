@@ -9,9 +9,8 @@ export class GetParameterController {
 
   async handle(request: Request, response: Response) {
     const { companyId } = request.user
-    const { serie = null } = request.body
 
-    const parameter = await this.getParameterUseCase.execute(companyId, serie)
+    const parameter = await this.getParameterUseCase.execute(companyId)
     return response.json(parameter)
   }
 }

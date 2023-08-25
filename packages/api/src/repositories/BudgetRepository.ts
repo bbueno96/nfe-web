@@ -1,25 +1,57 @@
 import { Prisma } from '@prisma/client'
 
+import { PrismaTransaction } from '../../prisma/types'
 import { prisma } from '../database/client'
 import { Budget } from '../entities/Budget'
 import { IListBudgetFilters } from '../useCases/ListBudget/ListBudgetDTO'
 
+class DadosBudget {
+  numberBudget: number
+  id: string
+  customerName?: string | null
+  cpfCnpj?: string | null
+  createdAt: Date
+  status?: number | null
+  deliveryForecast?: Date | null
+  auth: boolean
+  total: Prisma.Decimal
+  payMethodName: string
+  installments: string
+  paymentMean: number
+  customerApoioProperty?: string | null
+}
+
 export class BudgetRepository {
-  async update(data: Budget): Promise<Budget> {
-    return await prisma.budget.update({
-      where: { id: data.id },
+  update(id: string, data: Partial<Budget>, prismaTransaction: PrismaTransaction) {
+    return prismaTransaction.budget.update({
+      where: { id },
       data,
     })
   }
 
-  async create(data: Budget): Promise<Budget> {
-    return await prisma.budget.create({ data })
+  create(data: Budget, prismaTransaction: PrismaTransaction) {
+    return prismaTransaction.budget.create({ data })
   }
 
-  async findById(id: string): Promise<any> {
-    return await prisma.budget.findUnique({
+  findById(id: string) {
+    return prisma.budget.findUnique({
       where: { id },
-      include: { Customer: true, BudgetProducts: true, Admin: true, PayMethod: true },
+      include: {
+        Customer: true,
+        Admin: true,
+        PayMethod: true,
+        BudgetProducts: {
+          select: {
+            id: true,
+            budgetId: true,
+            productId: true,
+            amount: true,
+            unitary: true,
+            total: true,
+            Product: { select: { id: true, stock: true, description: true, cod: true, und: true } },
+          },
+        },
+      },
     })
   }
 
@@ -28,38 +60,61 @@ export class BudgetRepository {
     return count > 0
   }
 
-  async remove(budget: Budget): Promise<void> {
-    await prisma.budget.update({
+  async remove(budget: Budget, prismaTransaction: PrismaTransaction | null): Promise<void> {
+    const connection = prismaTransaction ?? prisma
+    await connection.budget.update({
       where: { id: budget.id },
       data: budget,
     })
   }
 
-  async list(filters: IListBudgetFilters): Promise<List<any>> {
-    const { companyId, customer, page, perPage, orderBy } = filters
+  async list(filters: IListBudgetFilters): Promise<List<DadosBudget>> {
+    const { companyId, customer, name, cpfCnpj, customerApoioProperty, page, perPage } = filters
+    let where = {}
+    where = {
+      ...where,
+      companyId: { equals: companyId },
+    }
+    if (cpfCnpj) {
+      where = {
+        ...where,
+        cpfCnpjApoio: { contains: cpfCnpj },
+      }
+    }
+    if (name) {
+      where = {
+        ...where,
+        customerApoioName: { contains: name, mode: 'insensitive' },
+      }
+    }
+    if (customerApoioProperty) {
+      where = {
+        ...where,
+        customerApoioProperty: { contains: customerApoioProperty, mode: 'insensitive' },
+      }
+    }
+    if (customer) {
+      where = {
+        ...where,
+        customerId: { contains: customer, mode: 'insensitive' },
+      }
+    }
 
     const items = await prisma.budget.findMany({
-      where: {
-        customerId: { contains: customer, mode: 'insensitive' },
-        companyId,
+      where,
+      skip: ((page ?? 1) - 1) * (perPage ?? 10),
+      take: perPage,
+      orderBy: {
+        numberBudget: 'desc',
       },
       include: {
         Customer: true,
         PayMethod: true,
         BudgetProducts: true,
       },
-      skip: Number((page - 1) * perPage) || undefined,
-      take: perPage,
-      orderBy: {
-        numberBudget: 'desc',
-      },
     })
-
     const records = await prisma.budget.count({
-      where: {
-        customerId: { contains: customer, mode: 'insensitive' },
-        companyId,
-      },
+      where,
     })
 
     return {
@@ -75,12 +130,15 @@ export class BudgetRepository {
           auth: i.auth,
           total: i.total,
           payMethodName: i.PayMethod ? i.PayMethod.description : '',
+          installments: i.installments ? i.installments : '',
+          paymentMean: i.paymentMean ? i.paymentMean : 1,
+          customerApoioProperty: i.customerApoioProperty,
         }
       }),
       pager: {
         records,
-        page,
-        perPage,
+        page: page ?? 1,
+        perPage: perPage ?? 10,
         pages: perPage ? Math.ceil(records / perPage) : 1,
       },
     }

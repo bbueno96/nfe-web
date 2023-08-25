@@ -1,6 +1,3 @@
-import { Prisma } from '@prisma/client'
-
-import { Brand } from '../../entities/Brand'
 import { GroupRepository } from '../../repositories/GroupRepository'
 import { ApiError } from '../../utils/ApiError'
 import { ICreateGroupDTO } from './CreateGroupDTO'
@@ -22,11 +19,9 @@ export class CreateGroupUseCase {
     this.sanitizeData(data)
     await this.validate(data)
 
-    const brand = await this.groupRepository.create(
-      Brand.create({
-        ...data,
-      }),
-    )
+    const brand = await this.groupRepository.create({
+      ...data,
+    })
     return brand.id
   }
 }

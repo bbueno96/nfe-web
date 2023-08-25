@@ -5,69 +5,34 @@ import { Prisma } from '@prisma/client'
 class TaxSituation {
   id?: string
   description: string
-  aliquotaIcms: Prisma.Decimal
-  cst?: number
-  baseIcms?: Prisma.Decimal
+  aliquotaIcms?: Prisma.Decimal | null
+  cst?: number | null
+  baseIcms?: Prisma.Decimal | null
   simplesNacional: boolean
-  aliquotaIcmsSt?: Prisma.Decimal
-  baseIcmsSt?: Prisma.Decimal
-  mva?: Prisma.Decimal
+  aliquotaIcmsSt?: Prisma.Decimal | null
+  baseIcmsSt?: Prisma.Decimal | null
+  mva?: Prisma.Decimal | null
   companyId: string
-  cfopState?: string
-  cfopInter?: string
-  cfopStatePf?: string
-  cfopInterPf?: string
+  cfopState?: string | null
+  cfopInter?: string | null
+  cfopStatePf?: string | null
+  cfopInterPf?: string | null
 
-  private constructor({
-    description,
-    aliquotaIcms,
-    cst,
-    simplesNacional,
-    companyId,
-    cfopState,
-    cfopInter,
-    cfopStatePf,
-    cfopInterPf,
-  }: TaxSituation) {
-    return Object.assign(this, {
-      description,
-      aliquotaIcms,
-      cst,
-      simplesNacional,
-      companyId,
-      cfopState,
-      cfopInter,
-      cfopStatePf,
-      cfopInterPf,
-    })
-  }
-
-  static create({
-    description,
-    aliquotaIcms,
-    cst,
-    simplesNacional,
-    companyId,
-    cfopState,
-    cfopInter,
-    cfopStatePf,
-    cfopInterPf,
-  }: TaxSituation) {
-    const taxSituation = new TaxSituation({
-      description,
-      aliquotaIcms,
-      cst,
-      simplesNacional,
-      companyId,
-      cfopState,
-      cfopInter,
-      cfopStatePf,
-      cfopInterPf,
-    })
-
-    taxSituation.id = uuidv4()
-
-    return taxSituation
+  constructor(props: Omit<TaxSituation, 'id'>, id?: string) {
+    this.id = id || uuidv4()
+    this.description = props.description
+    this.aliquotaIcms = props.aliquotaIcms
+    this.aliquotaIcmsSt = props.aliquotaIcmsSt
+    this.baseIcms = props.baseIcms
+    this.baseIcmsSt = props.baseIcmsSt
+    this.cst = props.cst
+    this.simplesNacional = props.simplesNacional
+    this.mva = props.mva
+    this.companyId = props.companyId
+    this.cfopState = props.cfopState
+    this.cfopInter = props.cfopInter
+    this.cfopStatePf = props.cfopStatePf
+    this.cfopInterPf = props.cfopInterPf
   }
 }
 

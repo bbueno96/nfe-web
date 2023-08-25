@@ -6,7 +6,8 @@ import { OrderProductsRepository } from '../../repositories/OrderProductsReposit
 import { OrderRepository } from '../../repositories/OrderRepository'
 import { ParameterRepository } from '../../repositories/ParameterRepository'
 import { ApiError } from '../../utils/ApiError'
-import { createInstallments } from '../../utils/Installments/installments'
+import { PaymentMean } from '../../utils/constants'
+import { createInstallmentsOrder } from '../../utils/Installments/installments'
 import { maskCpfCnpj, maskDecimal, maskCellPhone } from '../../utils/mask'
 export class GetOrderPdfUseCase {
   constructor(
@@ -20,11 +21,12 @@ export class GetOrderPdfUseCase {
     if (!order) {
       throw new ApiError('Pedido não encontrado.', 404)
     }
-    const parameters = await this.parameterRepository.getParameter(order.companyId)
+    const parameters = await this.parameterRepository.getParameter(order.companyId || '')
     const { Admin, PayMethod } = order
-    let { Customer } = order
-    if (parameters.getApoio) {
-      Customer = {
+    const { Customer } = order
+    let CustomerApoio
+    if (parameters?.getApoio) {
+      CustomerApoio = {
         name: order.customerApoioName,
         cpfCnpj: order.cpfCnpjApoio,
         stateInscription: order.stateInscriptionApoio,
@@ -38,12 +40,12 @@ export class GetOrderPdfUseCase {
         phone: order.phoneApoio,
       }
     }
-    let installments = null
+    let installments
     const products = await this.OrderProductsRepository.findByOrder(order.id)
-    if (PayMethod) installments = createInstallments(PayMethod, order, order.companyId)
-
+    // if (PayMethod) installments = createInstallments(PayMethod, order, order.companyId)
+    if (order.installments) installments = createInstallmentsOrder(order, order.companyId)
     const report = await ejs.renderFile(`${__dirname}/../../reports/order.ejs`, {
-      customer: Customer,
+      customer: CustomerApoio || Customer,
       products,
       order,
       parameters,
@@ -55,6 +57,7 @@ export class GetOrderPdfUseCase {
       maskCellPhone,
       PayMethod,
       installments,
+      PaymentMean,
     })
     return report
   }

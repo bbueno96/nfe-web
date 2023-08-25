@@ -1,3 +1,6 @@
+import { Customer } from '../../entities/Customer'
+import { NfeProducts } from '../../entities/NfeProducts'
+
 export interface IUpdateNfeDTO {
   id?: string
   cliente: string
@@ -7,6 +10,9 @@ export interface IUpdateNfeDTO {
   transpNome?: string
   frete: number
   seguro: number
+  placaTransp?: string
+  ufTransp?: string
+  rntrcTransp?: string
   outrasDespesas: number
   freteOutros: number
   desconto: number
@@ -22,6 +28,7 @@ export interface IUpdateNfeDTO {
   estorno?: boolean
   complementar?: boolean
   naturezaOp: string
+  nfeRef?: string
   observacoes?: string
   idCountry: number
   descCountry: string
@@ -33,13 +40,23 @@ export interface IUpdateNfeDTO {
   cExportador?: string
   transportador?: string
   erros?: string
-  products: any[]
+  products: NfeProducts[]
+  volumes?: number
+  especie?: string
   companyId: string
   paymentMethodId: string
-  Customer?: any
+  Customer?: Customer
   orderId?: string
   customerApoioId?: string
   customerApoioName?: string
   cpfCnpjApoio?: string
   employeeId: string
+  installments?: string
+  paymentMean?: number
+  reciboLote?: string
+  propertyId?: string
+  customerApoioProperty?: string
+  pesoBruto?: number
+  pesoLiquido?: number
+  tipoFrete?: number | null
 }

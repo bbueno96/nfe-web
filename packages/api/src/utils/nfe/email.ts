@@ -4,6 +4,7 @@ import { prisma } from '../../database/client'
 import { Parameter } from '../../entities/Parameter'
 import { NfeRepository } from '../../repositories/NfeRepository'
 import { logger } from '../../utils/logger'
+import { maskCpfCnpj } from '../../utils/mask'
 import { gerarDanfe } from '../../utils/webDanfe'
 interface NFeEmail {
   id: string
@@ -35,35 +36,35 @@ export async function sendEmail(nota: string, parameter: Parameter) {
   const nfeRepository = new NfeRepository()
   try {
     const nfArray =
-      await prisma.$queryRaw<NFeEmail>`SELECT nfe.id, chave, serie, "numeroNota",nfe.status as "Status",customer.email as "Email",  nfe."razaoSocial", "totalNota","cartaCorrecao", nfe."statuscartaCorrecao", transportador.email as "EmailTransp" FROM nfe
-  INNER JOIN customer ON customer.id = nfe.cliente
-  LEFT JOIN transportador ON transportador.id = nfe.transportador
+      await prisma.$queryRaw<NFeEmail>`SELECT nfe.id, chave, serie, "numeroNota",nfe.status as "Status",nfe.email as "Email",  nfe."razaoSocial", "totalNota","cartaCorrecao", nfe."cpfCnpj", nfe."statuscartaCorrecao", '' as "EmailTransp" FROM nfe
   WHERE nfe.id =${nota}`
     const nf = nfArray[0]
-
-    const remetente = nodemailer.createTransport({
-      host: parameter.emailHost,
-      port: parameter.emailPort,
-      secure: false,
-      auth: {
-        user: parameter.emailUsername,
-        pass: parameter.emailPassword,
-      },
-    })
-    const corpoEmail = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    if (nf.Email && parameter.emailHost) {
+      const remetente = nodemailer.createTransport({
+        host: parameter.emailHost,
+        port: parameter.emailPort,
+        secure: false,
+        auth: {
+          user: parameter.emailUsername,
+          pass: parameter.emailPassword,
+        },
+      })
+      const corpoEmail = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml">
         <head>
             <title></title>
         </head>
         <body>
             <p>
-                <b>Prezado(a) ${nf?.razaoSocial || ''},</b>
+                <b>Prezado(a) ${nf?.razaoSocial || ''} - ${maskCpfCnpj(nf?.cpfCnpj) || ''},</b>
             </p>
             <p>
                 Você está recebendo a Nota Fiscal Eletrônica número ${nf.numeroNota}, série ${nf.serie} de ${
-      parameter.nfeFantasia
-    },
-                no valor de R$ ${nf.totalNota}. Junto com a mercadoria, você receberá também um DANFE (Documento
+        parameter.nfeFantasia
+      },
+                no valor de R$ ${nf.totalNota.toFixed(
+                  2,
+                )}. Junto com a mercadoria, você receberá também um DANFE (Documento
                 Auxiliar da Nota Fiscal Eletrônica), que acompanha o trânsito das mercadorias.
             </p>
             <p>
@@ -119,9 +120,9 @@ export async function sendEmail(nota: string, parameter: Parameter) {
             </p>
         </body>
         </html>`
-    // #endregion
-    // #region
-    const corpoEmailCancel = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+      // #endregion
+      // #region
+      const corpoEmailCancel = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml">
         <head>
             <title></title>
@@ -172,9 +173,9 @@ export async function sendEmail(nota: string, parameter: Parameter) {
             </p>
         </body>
         </html>`
-    // #endregion
-    // #region
-    const corpoEmailCC = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+      // #endregion
+      // #region
+      const corpoEmailCC = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml">
         <head>
             <title></title>
@@ -227,146 +228,147 @@ export async function sendEmail(nota: string, parameter: Parameter) {
             </p>
         </body>
         </html>`
-    // #endregion
-    let corpo = ''
-    if (nf.Status === 'Cancelado') {
-      corpo = corpoEmailCancel
-    } else {
-      if (nf.statuscartaCorrecao == null) corpo = corpoEmail
-      else corpo = corpoEmailCC
-    }
-    let anexos = {}
-    let anexosdanfe = {}
-    let emailASerEnviado = {}
-    let chaveNota = ''
-    let chaveNotaret = ''
-    let anexoXml = ''
-    let nomeArq = ''
-    let titulo = ''
-    let copiaemail = ''
-    if (nf.Status === 'Cancelado') {
-      chaveNota = nf.chave.replace('NFe', '') + '-canc.xml'
-      copiaemail = parameter.emailCopyEmail
-    } else {
-      if (nf.statuscartaCorrecao == null) {
-        chaveNota = nf.chave.replace('NFe', '') + '-nfe.xml'
-        if (!nf.EmailTransp) copiaemail = parameter.emailCopyEmail
-        else if (parameter.emailCopyEmail === '') copiaemail = nf.EmailTransp
-        else copiaemail = parameter.emailCopyEmail + ',' + nf.EmailTransp
-      } else {
-        chaveNota = nf.chave.replace('NFe', '') + '-ccorrecao.xml'
-        copiaemail = parameter.emailCopyEmail
-      }
-    }
-    const xmlNota = await nfeRepository.getXmlNota(chaveNota)
-
-    if (xmlNota != null) {
+      // #endregion
+      let corpo = ''
       if (nf.Status === 'Cancelado') {
-        chaveNotaret = nf.chave.replace('NFe', '') + '-protcanc.xml'
+        corpo = corpoEmailCancel
+      } else {
+        if (nf.statuscartaCorrecao == null) corpo = corpoEmail
+        else corpo = corpoEmailCC
+      }
+      let anexos = {}
+      let anexosdanfe = {}
+      let emailASerEnviado = {}
+      let chaveNota = ''
+      let chaveNotaret = ''
+      let anexoXml = ''
+      let nomeArq = ''
+      let titulo = ''
+      let copiaemail
+      if (nf.Status === 'Cancelado') {
+        chaveNota = nf.chave.replace('NFe', '') + '-canc.xml'
+        copiaemail = parameter.emailCopyEmail
       } else {
         if (nf.statuscartaCorrecao == null) {
-          chaveNotaret = nf.chave.replace('NFe', '') + '-prot.xml'
-        } else chaveNotaret = nf.chave.replace('NFe', '') + '-protccor.xml'
+          chaveNota = nf.chave.replace('NFe', '') + '-nfe.xml'
+          if (!nf.EmailTransp) copiaemail = parameter.emailCopyEmail
+          else if (parameter.emailCopyEmail === '') copiaemail = nf.EmailTransp
+          else copiaemail = parameter.emailCopyEmail + ',' + nf.EmailTransp
+        } else {
+          chaveNota = nf.chave.replace('NFe', '') + '-ccorrecao.xml'
+          copiaemail = parameter.emailCopyEmail
+        }
       }
-      const xmlNotaret = await nfeRepository.getXmlNota(chaveNotaret)
+      const xmlNota = await nfeRepository.getXmlNota(chaveNota)
 
-      if (xmlNotaret != null) {
+      if (xmlNota != null) {
         if (nf.Status === 'Cancelado') {
-          anexoXml = `<procEventoNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00">
-              ${Buffer.from(xmlNota.conteudo, 'utf-8')}
-              <retEvento xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00">
-              ${Buffer.from(xmlNotaret.conteudo, 'utf-8')}
-              </retEvento>
-              </procEventoNFe>`
-          nomeArq = nf.chave.replace('NFe', '') + '-procCanNFe.xml'
-          titulo = 'Cancelamento Nota Fiscal Eletrônica Número ' + nf.numeroNota + ' Série ' + nf.serie
-          anexos = {
-            filename: nomeArq,
-            content: Buffer.from(anexoXml, 'utf-8'),
-          }
-          emailASerEnviado = {
-            from: {
-              name: parameter.nfeFantasia,
-              address: parameter.emailUsername,
-            },
-            to: nf.Email,
-            cc: copiaemail,
-            subject: titulo,
-            html: corpo,
-            attachments: [anexos],
-          }
+          chaveNotaret = nf.chave.replace('NFe', '') + '-protcanc.xml'
         } else {
           if (nf.statuscartaCorrecao == null) {
-            anexoXml = `<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
-              ${Buffer.from(xmlNota.conteudo, 'utf-8')}
-              <protNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
-              ${Buffer.from(xmlNotaret.conteudo, 'utf-8')}
-              </protNFe>
-              </nfeProc>`
-            titulo = 'Nota Fiscal Eletrônica Número ' + nf.numeroNota + ' Série ' + nf.serie
-            const danfeData = await gerarDanfeAsync(anexoXml)
+            chaveNotaret = nf.chave.replace('NFe', '') + '-prot.xml'
+          } else chaveNotaret = nf.chave.replace('NFe', '') + '-protccor.xml'
+        }
+        const xmlNotaret = await nfeRepository.getXmlNota(chaveNotaret)
 
-            anexosdanfe = {
-              filename: 'Danfe.pdf',
-              content: Buffer.from(danfeData, 'binary'),
-            }
-            nomeArq = nf.chave.replace('NFe', '') + '-procNFe.xml'
-            anexos = {
-              filename: nomeArq,
-              content: Buffer.from(anexoXml, 'utf-8'),
-            }
-          } else {
+        if (xmlNotaret != null) {
+          if (nf.Status === 'Cancelado') {
             anexoXml = `<procEventoNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00">
-              ${Buffer.from(xmlNota.conteudo, 'utf-8')}
+              ${xmlNota.conteudo?.toString('utf-8')}
               <retEvento xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00">
-              ${Buffer.from(xmlNotaret.conteudo, 'utf-8')}
+              ${xmlNotaret.conteudo?.toString('utf-8')}
               </retEvento>
               </procEventoNFe>`
-            nomeArq = nf.chave.replace('NFe', '') + '-procCcNFe.xml'
+            nomeArq = nf.chave.replace('NFe', '') + '-procCanNFe.xml'
+            titulo = 'Cancelamento Nota Fiscal Eletrônica Número ' + nf.numeroNota + ' Série ' + nf.serie
             anexos = {
               filename: nomeArq,
               content: Buffer.from(anexoXml, 'utf-8'),
             }
-            anexoXml = `<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
-              ${Buffer.from(xmlNota.conteudo, 'utf-8')}
+            emailASerEnviado = {
+              from: {
+                name: parameter.nfeFantasia,
+                address: parameter.emailUsername,
+              },
+              to: nf.Email,
+              cc: copiaemail,
+              subject: titulo,
+              html: corpo,
+              attachments: [anexos],
+            }
+          } else {
+            if (nf.statuscartaCorrecao == null) {
+              anexoXml = `<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+              ${xmlNota.conteudo?.toString('utf-8')}
               <protNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
-              ${Buffer.from(xmlNotaret.conteudo, 'utf-8')}
+              ${xmlNotaret.conteudo?.toString('utf-8')}
               </protNFe>
               </nfeProc>`
-            nomeArq = nf.chave.replace('NFe', '') + '-procNFe.xml'
-            anexosdanfe = {
-              filename: nomeArq,
-              content: Buffer.from(anexoXml, 'utf-8'),
+              titulo = 'Nota Fiscal Eletrônica Número ' + nf.numeroNota + ' Série ' + nf.serie
+              const danfeData = await gerarDanfeAsync(anexoXml)
+
+              anexosdanfe = {
+                filename: 'Danfe.pdf',
+                content: Buffer.from(danfeData, 'binary'),
+              }
+              nomeArq = nf.chave.replace('NFe', '') + '-procNFe.xml'
+              anexos = {
+                filename: nomeArq,
+                content: Buffer.from(anexoXml, 'utf-8'),
+              }
+            } else {
+              anexoXml = `<procEventoNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00">
+              ${xmlNota.conteudo?.toString('utf-8')}
+              <retEvento xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00">
+              ${xmlNotaret.conteudo?.toString('utf-8')}
+              </retEvento>
+              </procEventoNFe>`
+              nomeArq = nf.chave.replace('NFe', '') + '-procCcNFe.xml'
+              anexos = {
+                filename: nomeArq,
+                content: Buffer.from(anexoXml, 'utf-8'),
+              }
+              anexoXml = `<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+              ${xmlNota.conteudo?.toString('utf-8')}
+              <protNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+              ${xmlNotaret.conteudo?.toString('utf-8')}
+              </protNFe>
+              </nfeProc>`
+              nomeArq = nf.chave.replace('NFe', '') + '-procNFe.xml'
+              anexosdanfe = {
+                filename: nomeArq,
+                content: Buffer.from(anexoXml, 'utf-8'),
+              }
+              titulo = 'Carta Correção Eletrônica ref NFe ' + nf.numeroNota + ' Série ' + nf.serie
             }
-            titulo = 'Carta Correção Eletrônica ref NFe ' + nf.numeroNota + ' Série ' + nf.serie
+            emailASerEnviado = {
+              from: {
+                name: parameter.nfeFantasia,
+                address: parameter.emailUsername,
+              },
+              to: nf.Email,
+              cc: copiaemail,
+              subject: titulo,
+              html: corpo,
+              attachments: [anexos, anexosdanfe],
+            }
           }
-          emailASerEnviado = {
-            from: {
-              name: parameter.nfeFantasia,
-              address: parameter.emailUsername,
-            },
-            to: nf.Email,
-            cc: copiaemail,
-            subject: titulo,
-            html: corpo,
-            attachments: [anexos, anexosdanfe],
+          let erro = '0'
+          await remetente.sendMail(emailASerEnviado, function (error) {
+            if (error) {
+              console.log(error)
+              logger.error('Erro rotina envio Email n. nota ' + nf.numeroNota, error)
+              erro = '1'
+            } else {
+              // console.log('Email enviado com sucesso.')
+              erro = '0'
+            }
+          })
+          if (erro === '0') {
+            await prisma.$queryRaw`UPDATE nfe
+          SET "emailEnviado"=${true} WHERE id = ${nf.id}`
           }
         }
-        await remetente.sendMail(emailASerEnviado, function (error) {
-          if (error) {
-            console.log(error)
-            logger.error('Erro rotina envio Email n. nota ' + nf.numeroNota, error)
-            // erro = '1'
-          } // else {
-          // console.log('Email enviado com sucesso.')
-          // erro = '0'
-          // }
-        })
-        // if (erro === '0') {
-        await prisma.$queryRaw`UPDATE nfe
-          SET "emailEnviado"=${true} WHERE id = ${nf.id}`
-
-        // }
       }
     }
   } catch (err) {

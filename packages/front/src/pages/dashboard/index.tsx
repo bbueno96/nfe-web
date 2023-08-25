@@ -11,7 +11,7 @@ export const AdminDashboard = () => {
           <span className="kt-portlet__head-icon">
             <i className="kt-font-brand fas fa-home" />
           </span>
-          <h3 className="kt-portlet__head-title">Olá seja bem-vindo, {saOperator.name}.</h3>
+          <h3 className="kt-portlet__head-title">Olá seja bem-vindo, {saOperator?.name}.</h3>
         </div>
       </div>
     </div>

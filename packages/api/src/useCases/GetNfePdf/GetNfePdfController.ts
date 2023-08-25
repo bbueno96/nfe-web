@@ -16,7 +16,7 @@ export class GetNfePdfController {
       response.setHeader('Content-type', 'application/pdf')
       danfe.pipe(response)
     } else {
-      return response.json({ menssage: 'Nfe ainda não Autorizada' })
+      return response.json({ menssage: 'Nfe ainda não salva' })
     }
   }
 }

@@ -7,12 +7,10 @@ export class GetOrderByIdUseCase {
 
   async execute(id: string) {
     const order = await this.orderRepository.findById(id)
-    const OrderProducts = await this.orderProductsRepository.findByOrder(order.id)
-
     if (!order) {
       throw new ApiError('Nenhum Pedido Encontrado.', 404)
     }
 
-    return { ...order, OrderProducts }
+    return order
   }
 }

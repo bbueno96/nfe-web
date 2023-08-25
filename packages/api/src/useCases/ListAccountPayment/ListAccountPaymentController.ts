@@ -16,8 +16,8 @@ export class ListAccountPaymentController {
       minDueDate,
       paymentMeanId,
       companyId,
-      page: Number(page) || undefined,
-      perPage: Number(perPage) || undefined,
+      page,
+      perPage,
       orderBy: orderBy as string,
     })
     return response.json(payment)

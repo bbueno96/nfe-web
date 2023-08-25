@@ -1,5 +1,3 @@
-import { Prisma } from '@prisma/client'
-
 import { BrandRepository } from '../../repositories/BrandRepository'
 import { ApiError } from '../../utils/ApiError'
 import { IUpdateBrandDTO } from './UpdateBrandDTO'
@@ -27,7 +25,7 @@ export class UpdateBrandUseCase {
     this.sanitizeData(data)
     this.validate(data)
 
-    await this.brandRepository.update({
+    await this.brandRepository.update(data.id, {
       ...data,
     })
   }

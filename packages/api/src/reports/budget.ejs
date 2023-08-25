@@ -190,12 +190,16 @@
               <%= employee.name %>
             </td>
             <td style="text-align: left" colspan="2">
-              <strong>Forma de Pagamento: </strong>
-              <%=PayMethod? PayMethod.description : '' %>
+              <strong>Maio de Pagamento: </strong>
+              <%= budget.paymentMean ? PaymentMean[budget.paymentMean-1].description : '' %>
             </td>
           </tr>
           <tr>
-            <td style="text-align: left"><strong>Comprador(a</strong>) O(A) Mesmo(a)</td>
+            <td style="text-align: left" colspan="2"><strong>Comprador(a</strong>) O(A) Mesmo(a)</td>
+            <td style="text-align: left" colspan="2">
+              <strong>Parcelas: </strong>
+              <%= budget.installments%>
+            </td>
           </tr>
         </table>
         <table class="linha cabeçalhoProdutos">
@@ -220,8 +224,8 @@
         </table>
         <br />
         <br />
-        <% if(PayMethod) { %>
-        <table style="width: 40%; border-collapse: collapse">
+        <% if(budget.installments && installments.length > 0) { %>
+          <table style="width: 40%; border-collapse: collapse; font-size: xx-small">
           <tr>
             <th colspan="3">Parcelamento</th>
           </tr>
@@ -247,16 +251,6 @@
         <% } %>
       </div>
       <div></div>
-      <div name="obs" style="width: 70%">
-        <table>
-          <tr>
-            <td colspan="5" style="text-align: left">
-              <strong>Obs: </strong>
-              <%= budget.obs%>
-            </td>
-          </tr>
-        </table>
-      </div>
       <div class="footer">
         <table class="linhaBottom" style="font-weight: bold">
           <tr>
@@ -266,19 +260,14 @@
           </tr>
           <tr>
             <td></td>
-            <td style="width: 10%">Valor Total:</td>
+            <td style="width: 15%">Desconto:</td>
             <td style="width: 100%; text-align: right">
-              R$ <%= maskDecimal(budget.total.toFixed(2)) %>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              R$ <%= maskDecimal(budget.discount.toFixed(2)) %>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             </td>
           </tr>
           <tr>
             <td></td>
-            <td style="width: 10%">Desconto:</td>
-            <td style="width: 100%; text-align: right">R$ 0,00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-          </tr>
-          <tr>
-            <td></td>
-            <td style="width: 10%">Total Liquido:</td>
+            <td style="width: 15%">Total:</td>
             <td style="width: 100%; text-align: right">
               R$ <%= maskDecimal(budget.total.toFixed(2)) %>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             </td>

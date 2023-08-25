@@ -1,4 +1,6 @@
 import { AccountPayable } from '../../entities/AccountPayable'
+import { NfeProducts } from '../../entities/NfeProducts'
+import { Provider } from '../../entities/Provider'
 
 export interface ICreateNfeInputDTO {
   id?: string
@@ -35,9 +37,9 @@ export interface ICreateNfeInputDTO {
   cExportador?: string
   transportador?: string
   erros?: string
-  products: any[]
+  products: NfeProducts[]
   companyId: string
-  Fornecedor?: any
+  Fornecedor?: Provider
   installments?: AccountPayable[]
   especie?: string
   pesoBruto?: number
@@ -49,4 +51,6 @@ export interface ICreateNfeInputDTO {
   vIpi?: number
   vST?: number
   employeeId: string
+  paymentMean?: number
+  wallet?: number
 }

@@ -1,7 +1,7 @@
 export interface IUpdateProductDTO {
-  id?: string
-  group?: string
-  brand?: string
+  id?: string | null
+  group?: string | null
+  brand?: string | null
   description: string
   stock: number
   stockMinium?: number

@@ -18,4 +18,6 @@ export interface ICreateCustomerDTO {
   disableAt?: Date
   observations?: string
   companyId: string
+  deliveryAddress?: string | null
+  informarGTIN: boolean
 }

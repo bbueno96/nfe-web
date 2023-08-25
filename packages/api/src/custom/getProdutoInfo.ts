@@ -4,11 +4,11 @@ import { ProductRepository } from '../repositories/ProductRepository'
 
 export interface ProdutoInfo {
   id?: string
-  barCode: string
-  weight: Prisma.Decimal
+  barCode?: string | null
+  weight?: Prisma.Decimal | null
 }
 
-export async function getProdutoInfo(id: string): Promise<ProdutoInfo> {
+export async function getProdutoInfo(id: string) {
   const productRepository = new ProductRepository()
   const produtoInfo = await productRepository.findById(id)
 

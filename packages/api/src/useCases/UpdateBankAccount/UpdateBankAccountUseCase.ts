@@ -16,17 +16,23 @@ export class UpdateBankAccountUseCase {
   }
 
   async execute(data: IUpdateBankAccountDTO) {
-    const oldData = await this.bankAccountRepository.findById(data.id)
+    if (data.id) {
+      const oldData = await this.bankAccountRepository.findById(data.id)
 
-    if (!oldData) {
-      throw new ApiError('Conta não encontrado.', 404)
+      if (!oldData) {
+        throw new ApiError('Conta não encontrado.', 404)
+      }
+
+      this.sanitizeData(data)
+      this.validate(data)
+
+      await this.bankAccountRepository.update(
+        oldData.id,
+        {
+          ...data,
+        },
+        null,
+      )
     }
-
-    this.sanitizeData(data)
-    this.validate(data)
-
-    await this.bankAccountRepository.update({
-      ...data,
-    })
   }
 }

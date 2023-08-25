@@ -1,8 +1,6 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
-import { Prisma } from '@prisma/client'
-
 import { AdminRepository } from '../../repositories/AdminRepository'
 import { ApiError } from '../../utils/ApiError'
 import { ILoginAdminDTO } from './LoginAdminDTO'
@@ -31,30 +29,31 @@ export class LoginAdminUseCase {
     this.validate(data)
 
     const admin = await this.adminRepository.findByLogin(data.login)
+    if (admin) {
+      const isValid = await bcrypt.compare(data.password, admin?.passwordHash || '')
 
-    const isValid = await bcrypt.compare(data.password, admin?.passwordHash || '')
+      if (!isValid) {
+        throw new ApiError('Login ou senha está incorreto.', 422)
+      }
 
-    if (!isValid) {
-      throw new ApiError('Login ou senha está incorreto.', 422)
-    }
+      const payload: TokenOperator = {
+        id: admin.id,
+        name: admin.name,
+        companyId: admin.companyId || '',
+        roles: ['Admin'],
+      }
 
-    const payload: TokenOperator = {
-      id: admin.id,
-      name: admin.name,
-      companyId: admin.companyId,
-      roles: ['Admin'],
-    }
+      const user: ILoginAdminUserDTO = {
+        id: admin.id,
+        name: admin.name,
+      }
 
-    const user: ILoginAdminUserDTO = {
-      id: admin.id,
-      name: admin.name,
-    }
+      const accessToken = jwt.sign(payload, process.env.APP_SECRET || '', { expiresIn: '24h' })
 
-    const accessToken = jwt.sign(payload, process.env.APP_SECRET, { expiresIn: '24h' })
-
-    return {
-      accessToken,
-      user,
+      return {
+        accessToken,
+        user,
+      }
     }
   }
 }

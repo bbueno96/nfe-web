@@ -24,64 +24,6 @@ export function makeLine(layout: any, data: any) {
   return object
 }
 
-export function readLine(layout: any, data: any) {
-  let line = ''
-  const object: any = {}
-  if (layout) {
-    Object.keys(layout).forEach(key => {
-      const item = layout[key]
-      let value
-      if (key in data && data[key]) {
-        value = data[key]
-      } else {
-        value = item.default
-      }
-      const baseValue = value ? value + '' : ''
-      const pictures = usePicture(item, baseValue)
-      object[key] = pictures
-      line += pictures
-    })
-  }
-  return { line, object }
-}
-
-/**
- *
- *
- */
-const usePicture = function (item: any, value = '') {
-  const { picture } = item
-  if (picture.indexOf('V9') > 0) {
-    const out = regexPicture(/9\((\w+?)\)/g, picture)
-    return formatCurrency(Number(value), Number(out[0]), Number(out[1]))
-  } else if (picture.startsWith('9')) {
-    const out = regexPicture(/9\((\w+?)\)/g, picture)
-    if (item.date_format) {
-      return formatDate(value, out[0], item.date_format) // , item.date_format
-    } else {
-      return formatNumber(value, out[0])
-    }
-  } else if (picture.startsWith('X')) {
-    const out = regexPicture(/X\((\w+?)\)/g, picture)
-    return formatText(value, out[0])
-  } else {
-    throw new Error(`Cant recognize picture for ${picture}`)
-  }
-}
-const regexPicture = (exp: any, picture: any) => {
-  const regex = new RegExp(exp)
-  const text = picture // "9(10)V9(10)",
-  let result
-  const out = []
-
-  // tslint:disable-next-line:no-conditional-assignment
-  while ((result = regex.exec(text))) {
-    out.push(result[1])
-  }
-
-  return out
-}
-
 /*
  * Alfanumérico (picture X): alinhados à esquerda com brancos à direita. Preferencialmente,
  * todos os caracteres devem ser maiúsculos. Aconselhase a não utilização de

@@ -1,64 +1,29 @@
+import { v4 as uuidv4 } from 'uuid'
+
 class BankAccount {
   id?: string
-  description: string
-  institution: number
+  description?: string | null
+  institution?: number | null
   number: number
   verifyingDigit: number
   agency: number
-  disabledAt?: Date
-  companyId?: string
-  ourNumber?: number
-  sequenceLot?: number
-  wallet?: number
+  disabledAt?: Date | null
+  companyId?: string | null
+  ourNumber?: number | null
+  sequenceLot?: number | null
+  wallet?: number | null
 
-  private constructor({
-    description,
-    institution,
-    number,
-    verifyingDigit,
-    agency,
-    companyId,
-    ourNumber,
-    sequenceLot,
-    wallet,
-  }: BankAccount) {
-    return Object.assign(this, {
-      description,
-      institution,
-      number,
-      verifyingDigit,
-      agency,
-      companyId,
-      ourNumber,
-      sequenceLot,
-      wallet,
-    })
-  }
-
-  static create({
-    description,
-    institution,
-    number,
-    verifyingDigit,
-    agency,
-    companyId,
-    ourNumber,
-    sequenceLot,
-    wallet,
-  }: BankAccount) {
-    const bankAccount = new BankAccount({
-      description,
-      institution,
-      number,
-      verifyingDigit,
-      agency,
-      companyId,
-      ourNumber,
-      sequenceLot,
-      wallet,
-    })
-
-    return bankAccount
+  constructor(props: Omit<BankAccount, 'id'>, id?: string) {
+    this.id = id || uuidv4()
+    this.description = props.description
+    this.institution = props.institution
+    this.number = props.number
+    this.verifyingDigit = props.verifyingDigit
+    this.agency = props.agency
+    this.companyId = props.companyId
+    this.ourNumber = props.ourNumber
+    this.sequenceLot = props.sequenceLot
+    this.wallet = props.wallet
   }
 }
 

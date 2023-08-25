@@ -2,27 +2,28 @@ import { Prisma } from '@prisma/client'
 
 import { prisma } from '../database/client'
 import { Admin } from '../entities/Admin'
+import { IListAdminsFilters } from '../useCases/ListAdmins/ListAdminsDTO'
 
 export class AdminRepository {
-  async findByLogin(login: string): Promise<Admin> {
-    return await prisma.admin.findUnique({
+  findByLogin(login: string) {
+    return prisma.admin.findUnique({
       where: { login },
     })
   }
 
-  async update(data: Admin): Promise<Admin> {
-    return await prisma.admin.update({
-      where: { id: data.id },
+  update(id: string, data: Partial<Admin>) {
+    return prisma.admin.update({
+      where: { id },
       data,
     })
   }
 
-  async create(data: Admin): Promise<Admin> {
-    return await prisma.admin.create({ data })
+  create(data: Admin) {
+    return prisma.admin.create({ data })
   }
 
-  async findById(id: string): Promise<Admin> {
-    return await prisma.admin.findUnique({
+  findById(id: string) {
+    return prisma.admin.findUnique({
       where: { id },
     })
   }
@@ -34,7 +35,7 @@ export class AdminRepository {
     })
   }
 
-  async list(filters: any): Promise<List<Admin>> {
+  async list(filters: IListAdminsFilters): Promise<List<Admin>> {
     const { companyId, name, page, perPage, orderBy } = filters
 
     const items = await prisma.admin.findMany({
@@ -42,7 +43,7 @@ export class AdminRepository {
         name: { contains: name, mode: 'insensitive' },
         companyId: { equals: companyId },
       },
-      skip: Number((page - 1) * perPage) || undefined,
+      skip: ((page ?? 1) - 1) * (perPage ?? 10),
       take: perPage,
       orderBy: {
         name: orderBy as Prisma.SortOrder,
@@ -60,8 +61,8 @@ export class AdminRepository {
       items,
       pager: {
         records,
-        page,
-        perPage,
+        page: page ?? 1,
+        perPage: perPage ?? 10,
         pages: perPage ? Math.ceil(records / perPage) : 1,
       },
     }

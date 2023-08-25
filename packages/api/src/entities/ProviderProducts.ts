@@ -1,28 +1,17 @@
+import { v4 as uuidv4 } from 'uuid'
 class ProviderProducts {
   id?: string
-  productId: string
-  productIdProvider: string
-  providerId: string
-  companyId: string
+  productId?: string | null
+  productIdProvider?: string | null
+  providerId?: string | null
+  companyId?: string | null
 
-  private constructor({ productId, productIdProvider, providerId, companyId }: ProviderProducts) {
-    return Object.assign(this, {
-      productId,
-      productIdProvider,
-      providerId,
-      companyId,
-    })
-  }
-
-  static create({ productId, productIdProvider, providerId, companyId }: ProviderProducts) {
-    const providerProducts = new ProviderProducts({
-      productId,
-      productIdProvider,
-      providerId,
-      companyId,
-    })
-
-    return providerProducts
+  constructor(props: Omit<ProviderProducts, 'id'>, id?: string) {
+    this.id = id || uuidv4()
+    this.productId = props.productId
+    this.productIdProvider = props.productIdProvider
+    this.providerId = props.providerId
+    this.companyId = props.companyId
   }
 }
 

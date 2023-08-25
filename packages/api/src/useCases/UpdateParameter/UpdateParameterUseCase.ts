@@ -23,24 +23,29 @@ export class UpdateParameterUseCase {
   }
 
   async execute(data: IUpdateParameterDTO) {
-    const oldData = await this.parameterRepository.getParameter(data.companyId)
+    if (data.companyId) {
+      const oldData = await this.parameterRepository.getParameter(data.companyId)
 
-    if (!oldData) {
-      throw new ApiError('Parametro não encontrado.', 404)
+      if (!oldData) {
+        throw new ApiError('Parametro não encontrado.', 404)
+      }
+
+      await this.parameterRepository.update(
+        oldData.id,
+        {
+          ...oldData,
+          ...data,
+          nfeUfCod: +data.nfeUfCod,
+          nfeCidadeCod: +data.nfeCidadeCod,
+          nfeIndPresenca: +data.nfeIndPresenca,
+          nfeCrt: +data.nfeCrt,
+          emailPort: +data.emailPort || null,
+          serie: +data.serie,
+          fine: new Prisma.Decimal(data.fine || 0),
+          interest: new Prisma.Decimal(data.interest || 0),
+        },
+        null,
+      )
     }
-
-    // this.validate(data)
-    await this.parameterRepository.update({
-      ...oldData,
-      ...data,
-      nfeUfCod: +data.nfeUfCod,
-      nfeCidadeCod: +data.nfeCidadeCod,
-      nfeIndPresenca: +data.nfeIndPresenca,
-      nfeCrt: +data.nfeCrt,
-      emailPort: +data.emailPort || null,
-      serie: +data.serie,
-      fine: new Prisma.Decimal(data.fine),
-      interest: new Prisma.Decimal(data.interest),
-    })
   }
 }

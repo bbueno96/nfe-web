@@ -1,3 +1,6 @@
+import { Customer } from '../../entities/Customer'
+import { OrderProducts } from '../../entities/OrderProducts'
+
 export interface IUpdateOrderDTO {
   id: string
   createdAt: Date
@@ -8,10 +11,10 @@ export interface IUpdateOrderDTO {
   shipping: number
   employeeId: string
   companyId: string
-  products: any[]
+  products: OrderProducts[]
   obs?: string
   payMethodId?: string
-  Customer?: any
+  Customer?: Customer
   customerApoioId?: string
   customerApoioName?: string
   stateInscriptionApoio?: string
@@ -26,4 +29,6 @@ export interface IUpdateOrderDTO {
   cityApoio?: string
   stateApoio?: string
   cpfCnpjApoio?: string
+  propertyId?: string
+  customerApoioProperty?: string
 }

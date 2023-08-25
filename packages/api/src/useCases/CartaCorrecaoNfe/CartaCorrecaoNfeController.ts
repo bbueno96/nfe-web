@@ -15,6 +15,6 @@ export class CartaCorrecaoNfeController {
       companyId,
       carta: cartaCorrecao,
     })
-    return response.status(201).json({ cartaC })
+    return response.status(201).json(cartaC)
   }
 }

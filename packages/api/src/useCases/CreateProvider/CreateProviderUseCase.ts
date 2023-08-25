@@ -1,6 +1,3 @@
-import { Prisma } from '@prisma/client'
-
-import { Provider } from '../../entities/Provider'
 import { ProviderRepository } from '../../repositories/ProviderRepository'
 import { ApiError } from '../../utils/ApiError'
 import { isCnpj, isCpf } from '../../utils/cpfCnpj'
@@ -21,7 +18,7 @@ export class CreateProviderUseCase {
   async validate(data: ICreateProviderDTO) {
     if (!isCnpj(data.cpfCnpj) && !isCpf(data.cpfCnpj)) {
       throw new ApiError('O CNPJ/CPF é obrigatório.', 422)
-    } else if (await this.providerRepository.hasCnpj(data.cpfCnpj)) {
+    } else if (await this.providerRepository.hasCnpj(data.cpfCnpj, data.companyId)) {
       throw new ApiError('Já existe um cliente com o CNPJ informado.', 409)
     }
     if (!data.name) {
@@ -33,11 +30,9 @@ export class CreateProviderUseCase {
     this.sanitizeData(data)
     await this.validate(data)
 
-    const provider = await this.providerRepository.create(
-      Provider.create({
-        ...data,
-      }),
-    )
+    const provider = await this.providerRepository.create({
+      ...data,
+    })
     return provider.id
   }
 }

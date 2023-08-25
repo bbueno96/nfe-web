@@ -6,7 +6,9 @@ export function getICMS(cf: number, st: number, vb: number, aliq: number, vicm: 
   }
 
   if (st === 0) {
-    return { ICMS00: { orig, CST: '00', modBC: 2, vBC: vb, pICMS: aliq, vICMS: vicm } }
+    return {
+      ICMS00: { orig, CST: '00', modBC: 2, vBC: vb?.toFixed(2), pICMS: aliq?.toFixed(4), vICMS: vicm?.toFixed(2) },
+    }
   }
 
   if ([1, 10].includes(st)) {

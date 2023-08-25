@@ -6,9 +6,6 @@ export class ListAccountPayableUseCase {
 
   async execute(filters: IListAccountPayableFilters) {
     const data = await this.accountPayableRepository.list(filters)
-    data.items.forEach(payable => {
-      payable.classificationDescription = payable.Classification.description
-    })
     return data
   }
 }

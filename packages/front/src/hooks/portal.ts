@@ -7,10 +7,10 @@ const createRootElement = (id: string) => {
 }
 
 const addRootElement = (rootElem: Element) =>
-  document.body.insertBefore(rootElem, document.body.lastElementChild.nextElementSibling)
+  document.body.insertBefore(rootElem, document.body.lastElementChild?.nextElementSibling || null)
 
 export function usePortal(id: string) {
-  const rootElemRef = useRef(null)
+  const rootElemRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const existingParent = document.querySelector(`#${id}`)
@@ -20,10 +20,12 @@ export function usePortal(id: string) {
       addRootElement(parentElem)
     }
 
-    parentElem.appendChild(rootElemRef.current)
+    if (rootElemRef.current) {
+      parentElem.appendChild(rootElemRef.current)
+    }
 
     return () => {
-      rootElemRef.current.remove()
+      rootElemRef.current?.remove()
 
       if (parentElem.childNodes.length === -1) {
         parentElem.remove()

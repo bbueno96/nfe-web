@@ -2,7 +2,6 @@ import request from 'request'
 
 export function gerarDanfe(xml, callback) {
   const req = request.defaults({ jar: true })
-
   req(
     {
       method: 'POST',

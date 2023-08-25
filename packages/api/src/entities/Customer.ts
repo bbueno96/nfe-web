@@ -3,14 +3,14 @@ import { v4 as uuidv4 } from 'uuid'
 class Customer {
   id?: string
   cpfCnpj: string
-  stateInscription?: string
+  stateInscription?: string | null
   name: string
-  company?: string
+  company?: string | null
   email: string
   phone: string
   mobilePhone: string
   dateCreated: Date
-  additionalEmails?: string
+  additionalEmails?: string | null
   address: string
   addressNumber: string
   complement: string
@@ -18,82 +18,30 @@ class Customer {
   postalCode: string
   cityId: number
   state: string
-  disableAt?: Date
-  observations?: string
-  companyId: string
+  disableAt?: Date | null
+  observations?: string | null
+  companyId?: string | null
+  deliveryAddress?: string | null
+  informarGTIN: boolean
 
-  private constructor({
-    cpfCnpj,
-    name,
-    email,
-    phone,
-    mobilePhone,
-    dateCreated,
-    address,
-    addressNumber,
-    complement,
-    province,
-    postalCode,
-    cityId,
-    state,
-    companyId,
-  }: Customer) {
-    return Object.assign(this, {
-      cpfCnpj,
-      name,
-      email,
-      phone,
-      mobilePhone,
-      dateCreated,
-      address,
-      addressNumber,
-      complement,
-      province,
-      postalCode,
-      cityId,
-      state,
-      companyId,
-    })
-  }
-
-  static create(
-    {
-      cpfCnpj,
-      name,
-      email,
-      phone,
-      mobilePhone,
-      dateCreated,
-      address,
-      addressNumber,
-      complement,
-      province,
-      postalCode,
-      companyId,
-      cityId,
-      state,
-    }: Customer,
-    id?: string,
-  ) {
-    const customer = new Customer({
-      cpfCnpj,
-      name,
-      email,
-      phone,
-      mobilePhone,
-      dateCreated,
-      address,
-      addressNumber,
-      complement,
-      province,
-      postalCode,
-      companyId,
-      cityId,
-      state,
-    })
-
-    customer.id = id || uuidv4()
-    return customer
+  constructor(props: Omit<Customer, 'id'>, id?: string) {
+    this.id = id || uuidv4()
+    this.cpfCnpj = props.cpfCnpj
+    this.name = props.name
+    this.email = props.email
+    this.phone = props.phone
+    this.mobilePhone = props.mobilePhone
+    this.dateCreated = props.dateCreated
+    this.address = props.address
+    this.addressNumber = props.addressNumber
+    this.complement = props.complement
+    this.province = props.province
+    this.postalCode = props.postalCode
+    this.cityId = props.cityId
+    this.state = props.state
+    this.companyId = props.companyId
+    this.deliveryAddress = props.deliveryAddress
+    this.informarGTIN = props.informarGTIN
   }
 }
 

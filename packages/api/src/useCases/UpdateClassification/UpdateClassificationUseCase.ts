@@ -16,17 +16,19 @@ export class UpdateClassificationUseCase {
   }
 
   async execute(data: IUpdateClassificationDTO) {
-    const oldData = await this.classificationRepository.findById(data.id)
+    if (data.id) {
+      const oldData = await this.classificationRepository.findById(data.id)
 
-    if (!oldData) {
-      throw new ApiError('Vendedor não encontrado.', 404)
+      if (!oldData) {
+        throw new ApiError('Vendedor não encontrado.', 404)
+      }
+
+      this.sanitizeData(data)
+      this.validate(data)
+
+      await this.classificationRepository.update(oldData.id, {
+        ...data,
+      })
     }
-
-    this.sanitizeData(data)
-    this.validate(data)
-
-    await this.classificationRepository.update({
-      ...data,
-    })
   }
 }

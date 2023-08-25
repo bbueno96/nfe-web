@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 
+import { prisma } from '../../prisma'
 import { CreateNfeUseCase } from './CreateNfeUseCase'
 
 export class CreateNfeController {
@@ -7,7 +8,7 @@ export class CreateNfeController {
     this.handle = this.handle.bind(this)
   }
 
-  async handle(request: Request, response: Response) {
+  handle(request: Request, response: Response) {
     const { companyId, id: employeeId } = request.user
     const {
       cliente,
@@ -47,60 +48,79 @@ export class CreateNfeController {
       Customer,
       paymentMethodId,
       orderId,
-      // placaTransp,
-      // ufTransp,
+      placaTransp,
+      ufTransp,
+      rntrcTransp,
       transpCpfCnpj,
       transpEndereco,
       transpEstado,
       tranpCidade,
+      installments,
+      paymentMean,
+      bankAccountId,
+      wallet,
+      propertyId,
+      customerApoioProperty,
     } = request.body
-
-    const id = await this.CreateNfeUseCase.execute({
-      cliente,
-      fornecedor,
-      data,
-      numeroNota: parseInt(numeroNota),
-      tipo,
-      transpNome,
-      frete,
-      seguro,
-      outrasDespesas,
-      freteOutros,
-      desconto,
-      totalCheque,
-      totalDinheiro,
-      totalCartaoCredito,
-      totalBoleto,
-      totalOutros,
-      totalCartaoDebito,
-      totalNota,
-      totalProduto,
-      serie,
-      estorno,
-      complementar,
-      naturezaOp,
-      observacoes,
-      idCountry,
-      descCountry,
-      nDi,
-      dDi,
-      xLocDesemb,
-      uFDesemb,
-      tpViaTransp,
-      cExportador,
-      transportador,
-      products,
-      companyId,
-      Customer,
-      paymentMethodId,
-      orderId,
-      employeeId,
-      transpCpfCnpj,
-      transpEndereco,
-      transpEstado,
-      tranpCidade,
+    return prisma.$transaction(async prismaTransaction => {
+      const id = await this.CreateNfeUseCase.execute(
+        {
+          cliente,
+          fornecedor,
+          data,
+          numeroNota: parseInt(numeroNota),
+          tipo,
+          transpNome,
+          frete,
+          seguro,
+          outrasDespesas,
+          freteOutros,
+          desconto,
+          totalCheque,
+          totalDinheiro,
+          totalCartaoCredito,
+          totalBoleto,
+          totalOutros,
+          totalCartaoDebito,
+          totalNota,
+          totalProduto,
+          serie,
+          estorno,
+          complementar,
+          naturezaOp,
+          observacoes,
+          idCountry,
+          descCountry,
+          nDi,
+          dDi,
+          xLocDesemb,
+          uFDesemb,
+          tpViaTransp,
+          cExportador,
+          transportador,
+          products,
+          companyId,
+          Customer,
+          paymentMethodId,
+          orderId,
+          employeeId,
+          placaTransp,
+          ufTransp,
+          rntrcTransp,
+          transpCpfCnpj,
+          transpEndereco,
+          transpEstado,
+          tranpCidade,
+          installments,
+          paymentMean,
+          bankAccountId,
+          wallet,
+          propertyId,
+          customerApoioProperty,
+        },
+        prismaTransaction,
+      )
+      return response.status(201).json({ id })
     })
-
-    return response.status(201).json({ id })
   }
 }

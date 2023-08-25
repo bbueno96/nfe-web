@@ -1,5 +1,7 @@
+import { Nfe } from '../../entities/Nfe'
+
 export interface ICartaCorrecaoNfeDTO {
-  nota: any
+  nota: Nfe
   companyId: string
   carta: string
 }

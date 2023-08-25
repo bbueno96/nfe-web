@@ -2,21 +2,22 @@ import { Prisma } from '@prisma/client'
 
 import { prisma } from '../database/client'
 import { Group } from '../entities/Group'
+import { IListGroupFilters } from '../useCases/ListGroup/ListGroupDTO'
 
 export class GroupRepository {
-  async update(data: Group): Promise<Group> {
-    return await prisma.group.update({
-      where: { id: data.id },
+  update(id: string, data: Partial<Group>) {
+    return prisma.group.update({
+      where: { id },
       data,
     })
   }
 
-  async create(data: Group): Promise<Group> {
-    return await prisma.group.create({ data })
+  create(data: Group) {
+    return prisma.group.create({ data })
   }
 
-  async findById(id: string): Promise<Group> {
-    return await prisma.group.findUnique({
+  findById(id: string) {
+    return prisma.group.findUnique({
       where: { id },
     })
   }
@@ -28,7 +29,7 @@ export class GroupRepository {
     })
   }
 
-  async list(filters: any): Promise<List<Group>> {
+  async list(filters: IListGroupFilters): Promise<List<Group>> {
     const { companyId, description, page, perPage, orderBy } = filters
 
     const items = await prisma.group.findMany({
@@ -36,7 +37,7 @@ export class GroupRepository {
         description: { contains: description, mode: 'insensitive' },
         companyId,
       },
-      skip: Number((page - 1) * perPage) || undefined,
+      skip: ((page ?? 1) - 1) * (perPage ?? 10),
       take: perPage,
       orderBy: {
         description: orderBy as Prisma.SortOrder,
@@ -54,8 +55,8 @@ export class GroupRepository {
       items,
       pager: {
         records,
-        page,
-        perPage,
+        page: page ?? 1,
+        perPage: perPage ?? 10,
         pages: perPage ? Math.ceil(records / perPage) : 1,
       },
     }

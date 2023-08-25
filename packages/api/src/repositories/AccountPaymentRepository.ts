@@ -1,27 +1,38 @@
 import { Prisma } from '@prisma/client'
 
+import { PrismaTransaction } from '../../prisma/types'
 import { prisma } from '../database/client'
 import { AccountPayment } from '../entities/AccountPayment'
+import { IListAccountPaymentFilters } from '../useCases/ListAccountPayment/ListAccountPaymentDTO'
 
+class DadosAccountPayment {
+  id?: string
+  createdAt: Date
+  value: Prisma.Decimal
+  paymentMeanId: number
+  bankAccountId: string
+  companyId?: string | null
+  bankAccountDescription?: string | null
+}
 export class AccountPaymentRepository {
-  async update(data: AccountPayment): Promise<AccountPayment> {
-    return await prisma.accountPayment.update({
-      where: { id: data.id },
+  async update(id: string, data: Partial<AccountPayment>, prismaTransaction: PrismaTransaction) {
+    return await prismaTransaction.accountPayment.update({
+      where: { id },
       data,
     })
   }
 
-  async create(data: AccountPayment): Promise<AccountPayment> {
-    return await prisma.accountPayment.create({ data })
+  create(data: AccountPayment, prismaTransaction: PrismaTransaction) {
+    return prismaTransaction.accountPayment.create({ data })
   }
 
-  async findById(id: string): Promise<AccountPayment> {
-    return await prisma.accountPayment.findUnique({
+  findById(id: string) {
+    return prisma.accountPayment.findUnique({
       where: { id },
     })
   }
 
-  async list(filters: any): Promise<List<any>> {
+  async list(filters: IListAccountPaymentFilters): Promise<List<DadosAccountPayment>> {
     const { companyId, bankAccountId, maxDueDate, minDueDate, paymentMeanId, page, perPage, orderBy } = filters
 
     let where = {}
@@ -41,7 +52,7 @@ export class AccountPaymentRepository {
     if (bankAccountId) {
       where = {
         ...where,
-        bankAccountId: { contains: bankAccountId, mode: 'insensitive' },
+        bankAccountId,
       }
     }
     if (paymentMeanId) {
@@ -53,7 +64,7 @@ export class AccountPaymentRepository {
 
     const items = await prisma.accountPayment.findMany({
       where,
-      skip: Number((page - 1) * perPage) || undefined,
+      skip: ((page ?? 1) - 1) * (perPage ?? 10),
       take: perPage,
       orderBy: {
         bankAccountId: orderBy as Prisma.SortOrder,
@@ -68,11 +79,21 @@ export class AccountPaymentRepository {
     })
 
     return {
-      items,
+      items: items.map(e => {
+        return {
+          id: e.id,
+          createdAt: e.createdAt,
+          value: e.value,
+          paymentMeanId: e.paymentMeanId,
+          bankAccountId: e.bankAccountId,
+          companyId: e.companyId,
+          bankAccountDescription: e.BankAccount.description,
+        }
+      }),
       pager: {
         records,
-        page,
-        perPage,
+        page: page ?? 1,
+        perPage: perPage ?? 10,
         pages: perPage ? Math.ceil(records / perPage) : 1,
       },
     }

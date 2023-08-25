@@ -2,21 +2,22 @@ import { Prisma } from '@prisma/client'
 
 import { prisma } from '../database/client'
 import { Classification } from '../entities/Classification'
+import { IListClassificationFilters } from '../useCases/ListClassification/ListClassificationDTO'
 
 export class ClassificationRepository {
-  async update(data: Classification): Promise<Classification> {
-    return await prisma.classification.update({
-      where: { id: data.id },
+  update(id: string, data: Partial<Classification>) {
+    return prisma.classification.update({
+      where: { id },
       data,
     })
   }
 
-  async create(data: Classification): Promise<Classification> {
-    return await prisma.classification.create({ data })
+  create(data: Classification) {
+    return prisma.classification.create({ data })
   }
 
-  async findById(id: string): Promise<Classification> {
-    return await prisma.classification.findUnique({
+  findById(id: string) {
+    return prisma.classification.findUnique({
       where: { id },
     })
   }
@@ -28,7 +29,7 @@ export class ClassificationRepository {
     })
   }
 
-  async list(filters: any): Promise<List<Classification>> {
+  async list(filters: IListClassificationFilters): Promise<List<Classification>> {
     const { companyId, description, page, perPage, orderBy } = filters
 
     const items = await prisma.classification.findMany({
@@ -36,7 +37,7 @@ export class ClassificationRepository {
         description: { contains: description, mode: 'insensitive' },
         companyId,
       },
-      skip: Number((page - 1) * perPage) || undefined,
+      skip: ((page ?? 1) - 1) * (perPage ?? 10),
       take: perPage,
       orderBy: {
         description: orderBy as Prisma.SortOrder,
@@ -54,8 +55,8 @@ export class ClassificationRepository {
       items,
       pager: {
         records,
-        page,
-        perPage,
+        page: page ?? 1,
+        perPage: perPage ?? 10,
         pages: perPage ? Math.ceil(records / perPage) : 1,
       },
     }

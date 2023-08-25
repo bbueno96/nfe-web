@@ -17,6 +17,33 @@ export const customerTypes = [
   { id: 2, name: 'Ambos' },
 ]
 
+export const Origem = [
+  { id: 0, name: '0 - Nacional, exceto as indicadas nos códigos 3, 4, 5 e 8' },
+  { id: 1, name: '1 - Estrangeira - Importação direta, exceto a indicada no código 6' },
+  { id: 2, name: '2 - Estrangeira - Adquirida no mercado interno, exceto a indicada no código 7' },
+  {
+    id: 3,
+    name: '3 - Nacional, mercadoria ou bem com Conteúdo de Importação superior a 40% (quarenta por cento) e inferior ou igual a 70% (setenta por cento)',
+  },
+  {
+    id: 4,
+    name: '4 - Nacional, cuja produção tenha sido feita em conformidade com os processos produtivos básicos de que tratam o Decreto-Lei no 288/67, e as Leis nos 8.248/91, 8.387/91, 10.176/01 e 11.484/07',
+  },
+  {
+    id: 5,
+    name: '5 - Nacional, mercadoria ou bem com Conteúdo de Importação inferior ou igual a 40% (quarenta por cento)',
+  },
+  {
+    id: 6,
+    name: '6 - Estrangeira - Importação direta, sem similar nacional, constante em lista de Resolução CAMEX e gás natural',
+  },
+  {
+    id: 7,
+    name: '7 - Estrangeira - Adquirida no mercado interno, sem similar nacional, constante em lista de Resolução CAMEX e gás natural',
+  },
+  { id: 8, name: '8 - Nacional, mercadoria ou bem com Conteúdo de Importação superior a 70% (setenta por cento)' },
+]
+
 export const CST = [
   { id: 0, name: 'Tributada integralmente' },
   { id: 10, name: 'Tributada e com cobrança do ICMS por substituição tributária' },
@@ -8661,6 +8688,18 @@ export const PaymentMean = [
   { id: 8, description: 'Cartão de Débito' },
   { id: 9, description: 'Cartão Parcelado' },
   { id: 10, description: 'Boleto Parcelado' },
+]
+
+export const StockType = [
+  { id: 'E', description: 'Entrada' },
+  { id: 'S', description: 'Saída' },
+]
+
+export const TypeGenerate = [
+  { id: 1, description: 'Nota Entrada' },
+  { id: 2, description: 'Nota Fiscal' },
+  { id: 3, description: 'Acerto Estoque' },
+  { id: 4, description: 'Cancelamento Nota' },
 ]
 
 export const Banks = [

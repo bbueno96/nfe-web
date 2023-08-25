@@ -6,16 +6,16 @@ import axios from '@nfe-web/axios-config'
 
 import { useApp } from '../../App'
 import { Button } from '../../components/button'
-import DecimalInput from '../../components/form/decimal-input'
 import { ErrorMessage } from '../../components/form/error-message'
 import { Field } from '../../components/form/field'
 import { Select } from '../../components/form/select'
-import SwitchInput from '../../components/form/switch'
 import { TextInput } from '../../components/form/text-input'
 import { Cities, RequiredMessage } from '../../helpers/constants'
 import { getAddress, onlyNumbers } from '../../helpers/format'
 import { classNames, getCnpj } from '../../helpers/misc'
 import { useRefresh } from '../../hooks/refresh'
+import { RenderFiscal } from './fiscalForm'
+import { RenderOther } from './otherForm'
 
 interface ParameterFormValues {
   id?: string
@@ -30,9 +30,9 @@ interface ParameterFormValues {
   nfeNumero: string
   nfeBairro: string
   nfeUf: string
-  nfeUfCod: number
+  nfeUfCod?: number | null
   nfeCidade: string
-  nfeCidadeCod: number
+  nfeCidadeCod?: number | null
   nfeCep: string
   nfeFone: string
   nfeCsc: string
@@ -49,7 +49,7 @@ interface ParameterFormValues {
   ultNota: number
   view: string
   getApoio: boolean
-  classificationId: boolean
+  classificationId?: string | null
 }
 
 export const RenderInitial = ({ form, entity }) => {
@@ -201,195 +201,6 @@ export const RenderInitial = ({ form, entity }) => {
   )
 }
 
-export const RenderFiscal = ({ form, entity, handleUploadFile }) => {
-  return (
-    <>
-      <div className="row">
-        <div className="col-lg-2">
-          <Field label="Serie">
-            <TextInput
-              acceptEnter
-              id="serie"
-              type="text"
-              placeholder="Serie da nota"
-              value={entity.serie}
-              autoComplete="serie"
-            />
-          </Field>
-        </div>
-        <div className="col-lg-2">
-          <Field label="Homologação">
-            <SwitchInput id={'nfeHomologation'} name={'nfeHomologation'} />
-          </Field>
-        </div>
-
-        <div className="col-lg-4">
-          <Field label="Certificado">
-            <br />
-            <input
-              type="file"
-              onChange={handleUploadFile}
-              accept="application/x-pkcs12"
-              id="pfx"
-              className="form-control"
-            />
-          </Field>
-        </div>
-
-        <div className="col-lg">
-          <Field label="Senha Certificado">
-            <TextInput
-              acceptEnter
-              id="passwordCert"
-              type="password"
-              placeholder="Senha"
-              icon="fas fa-lock"
-              value={entity.passwordCert}
-              autoComplete="current-password"
-            />
-          </Field>
-        </div>
-      </div>
-      <div className="row">
-        <div className="col-lg">
-          <Field label="CSC">
-            <TextInput
-              acceptEnter
-              id="nfeCsc"
-              type="text"
-              placeholder="Código de Segurança do Contribuinte"
-              value={entity.nfeCsc}
-              autoComplete="nfeCsc"
-            />
-          </Field>
-        </div>
-        <div className="col-lg">
-          <Field label="CNAE">
-            <TextInput
-              acceptEnter
-              id="nfeCnae"
-              type="text"
-              placeholder="CNAE"
-              value={entity.nfeCnae}
-              autoComplete="nfeCnae"
-            />
-          </Field>
-        </div>
-        <div className="col-lg">
-          <Field label="Regime Tributario">
-            <Select
-              getId={({ id }) => id}
-              getDisplay={({ name }) => name}
-              selected={entity.nfeCrt}
-              items={[
-                { id: 1, name: 'Simples Nacional' },
-                { id: 2, name: 'Simples Nacional, excesso sublimite de receita bruta.' },
-                { id: 3, name: 'Regime Normal' },
-              ]}
-              onChange={crt => {
-                form.setFieldValue('nfeCrt', crt?.id)
-              }}
-              disabled={false}
-              isMulti={undefined}
-              isClearable={true}
-              styles={undefined}
-            />
-          </Field>
-        </div>
-      </div>
-      <div className="row">
-        <div className="col-lg">
-          <Field label="Indicador de Presença">
-            <Select
-              getId={({ id }) => id}
-              getDisplay={({ name }) => name}
-              selected={entity.nfeIndPresenca}
-              items={[
-                { id: 0, name: 'Não se aplica' },
-                { id: 2, name: 'Operação não presencial, pela Internet' },
-                { id: 3, name: 'Operação não presencial, Teleatendimento' },
-                { id: 4, name: 'NFC-e em operação com entrega a domicílio' },
-                { id: 5, name: 'Operação presencial, fora do estabelecimento' },
-                { id: 9, name: 'Operação não presencial, outros.' },
-              ]}
-              onChange={pres => {
-                form.setFieldValue('nfeIndPresenca', pres?.id)
-              }}
-              disabled={false}
-              isMulti={undefined}
-              isClearable={true}
-              styles={undefined}
-            />
-          </Field>
-        </div>
-      </div>
-      <div className="kt-separator kt-separator--border-dashed kt-separator--space-lg" />
-    </>
-  )
-}
-
-export const RenderOther = ({ form, entity }) => {
-  const { modal, saToken } = useApp()
-  const [classifications, setClassifications] = useState([])
-
-  useEffect(() => {
-    axios
-      .post(`classification.list`, {}, { headers: { Authorization: `Bearer ${saToken}` } })
-      .then(({ data }) => {
-        setClassifications(data.items)
-      })
-      .catch(err => modal?.alert(err.message))
-      .finally()
-  }, [])
-  return (
-    <>
-      <div className="row">
-        <div className="col-lg">
-          <Field label="Classificação Financeira Nota de entrada">
-            <Select
-              getDisplay={({ description }) => description}
-              getId={({ id }) => id}
-              selected={entity.classificationId}
-              items={classifications}
-              onChange={classification => form.setFieldValue('classificationId', classification?.id)}
-            />
-          </Field>
-        </div>
-        <div className="col-lg-2">
-          <Field label="Pega Clientes Apoio">
-            <SwitchInput id={'getApoio'} name={'getApoio'} />
-          </Field>
-        </div>
-      </div>
-      <div className="row">
-        <div className="col-lg">
-          <Field label="Multa">
-            <DecimalInput
-              id="fine"
-              name="fine"
-              icon={'fas fa-percentage'}
-              acceptEnter={true}
-              noSelect={undefined}
-              disabled={false}
-            />
-          </Field>
-        </div>
-        <div className="col-lg">
-          <Field label="Juros">
-            <DecimalInput
-              id="interest"
-              name="interest"
-              icon={'fas fa-percentage'}
-              acceptEnter={true}
-              noSelect={undefined}
-              disabled={false}
-            />
-          </Field>
-        </div>
-      </div>
-    </>
-  )
-}
 export const ParameterForm = () => {
   const [file, setCardFile] = useState()
   const handleUploadFile = e => setCardFile(e.target.files[0])
@@ -436,8 +247,8 @@ export const ParameterForm = () => {
 
   function handleSubmit(values: ParameterFormValues) {
     const data = new FormData()
-    data.append('file', values.pfx)
-    data.append('passwordCert', '' + btoa(values.passwordCert))
+    if (values.pfx) data.append('file', values.pfx)
+    if (values.passwordCert) data.append('passwordCert', '' + btoa(values.passwordCert))
     data.append('nfeHomologation', '' + values.nfeHomologation)
     data.append('nfeRazao', values.nfeRazao)
     data.append('nfeFantasia', values.nfeFantasia)
@@ -628,6 +439,7 @@ export const ParameterForm = () => {
     </FormikProvider>
   )
 }
+
 function validateForm(values: ParameterFormValues) {
   const errors: FormikErrors<ParameterFormValues> = {}
   if (!values.pfx) {

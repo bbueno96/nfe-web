@@ -1,3 +1,6 @@
+import { Customer } from '../../entities/Customer'
+import { NfeProducts } from '../../entities/NfeProducts'
+
 export interface ICreateNfeDTO {
   id?: string
   cliente: string
@@ -34,19 +37,26 @@ export interface ICreateNfeDTO {
   cExportador?: string
   transportador?: string
   erros?: string
-  products: any[]
+  products: NfeProducts[]
   companyId: string
   paymentMethodId: string
-  Customer?: any
+  Customer?: Customer
   orderId?: string
   customerApoioId?: string
   customerApoioName?: string
   cpfCnpjApoio?: string
   employeeId: string
-  // placaTransp?: string
-  // ufTransp?: string
+  placaTransp?: string
+  ufTransp?: string
+  rntrcTransp?: string
   transpCpfCnpj?: string
   transpEndereco?: string
   transpEstado?: string
   tranpCidade?: string
+  installments?: string
+  paymentMean?: number
+  bankAccountId: string
+  wallet?: number
+  propertyId?: string
+  customerApoioProperty?: string
 }

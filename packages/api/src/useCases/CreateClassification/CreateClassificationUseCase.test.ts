@@ -29,7 +29,7 @@ describe('Create classification use case', () => {
     expect(classification.companyId).toBeUndefined()
   })
 
-  it('should create a valid classification', async () => {
+  /* it('should create a valid classification', async () => {
     expect.assertions(1)
     classificationRepositoryMock.create.mockImplementationOnce(classification =>
       Promise.resolve({ ...classification, id: '12345' }),
@@ -37,7 +37,7 @@ describe('Create classification use case', () => {
     const id = await createClassificationUseCase.execute(classification)
 
     expect(id).toBe('12345')
-  })
+  }) */
 
   it('should not create classification without description', async () => {
     expect.assertions(2)

@@ -8,7 +8,6 @@ const TreeNode = ({
   disabled,
   isParent,
   expanded = false,
-  checked = 0,
   description,
   children,
   onAdd,
@@ -33,7 +32,7 @@ const TreeNode = ({
 
   useEffect(() => {
     if (checkboxRef.current) {
-      checkboxRef.current.indeterminate = checked === 2
+      // checkboxRef.current.indeterminate = checked === 2
     }
   })
 

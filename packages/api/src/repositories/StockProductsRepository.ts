@@ -1,62 +1,37 @@
 import { Prisma } from '@prisma/client'
 
+import { PrismaTransaction } from '../../prisma/types'
 import { prisma } from '../database/client'
 import { StockProducts } from '../entities/StockProducts'
 
 export class StockProductsRepository {
-  async update(data: StockProducts): Promise<StockProducts> {
-    return await prisma.stockProducts.update({
-      where: { id: data.id },
+  update(id: string, data: Partial<StockProducts>, prismaTransaction: PrismaTransaction) {
+    return prismaTransaction.stockProducts.update({
+      where: { id },
       data,
     })
   }
 
-  async create(data: StockProducts): Promise<StockProducts> {
-    return await prisma.stockProducts.create({ data })
+  create(data: StockProducts, prismaTransaction: PrismaTransaction) {
+    return prismaTransaction.stockProducts.create({ data })
   }
 
-  async findById(id: string): Promise<StockProducts> {
-    return await prisma.stockProducts.findUnique({
+  findById(id: string) {
+    return prisma.stockProducts.findUnique({
       where: { id },
     })
   }
 
-  async remove(notaId: string): Promise<void> {
-    await prisma.stockProducts.deleteMany({
-      where: { generateId: notaId },
+  findByProduct(productId: string, companyId: string) {
+    return prisma.stockProducts.findMany({
+      where: { productId, companyId },
+      orderBy: { createdAt: 'desc' as Prisma.SortOrder },
     })
   }
 
-  async list(filters: any): Promise<List<StockProducts>> {
-    const { companyId, description, page, perPage, orderBy } = filters
-
-    const items = await prisma.stockProducts.findMany({
-      where: {
-        numeroDoc: { contains: description, mode: 'insensitive' },
-        companyId,
-      },
-      skip: Number((page - 1) * perPage) || undefined,
-      take: perPage,
-      orderBy: {
-        numeroDoc: orderBy as Prisma.SortOrder,
-      },
+  async remove(notaId: string, prismaTransaction: PrismaTransaction): Promise<void> {
+    await prismaTransaction.stockProducts.deleteMany({
+      where: { generateId: notaId },
     })
-
-    const records = await prisma.stockProducts.count({
-      where: {
-        numeroDoc: { contains: description },
-        companyId,
-      },
-    })
-
-    return {
-      items,
-      pager: {
-        records,
-        page,
-        perPage,
-        pages: perPage ? Math.ceil(records / perPage) : 1,
-      },
-    }
   }
 }

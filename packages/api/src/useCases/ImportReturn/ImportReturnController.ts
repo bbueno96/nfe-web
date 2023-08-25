@@ -8,8 +8,6 @@ export class ImportReturnController {
   }
 
   handle(request: Request, response: Response) {
-    // const file = request.file.buffer
-    // const { companyId } = request.user
     this.importReturnUseCase.execute()
 
     return response.status(204).send()

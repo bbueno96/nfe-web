@@ -6,220 +6,71 @@ class Budget {
   id?: string
   numberBudget: number
   createdAt: Date
-  status: number
-  discount: Prisma.Decimal
+  status?: number | null
+  discount?: Prisma.Decimal | null
   total: Prisma.Decimal
-  deliveryForecast: Date
-  customerId: string
-  shipping: Prisma.Decimal
+  deliveryForecast?: Date | null
+  customerId?: string | null
+  shipping?: Prisma.Decimal | null
   employeeId: string
   auth: boolean
-  payMethodId?: string
-  companyId?: string
-  customerApoioId?: string
-  customerApoioName?: string
-  obs?: string
-  stateInscriptionApoio?: string
-  emailApoio?: string
-  phoneApoio?: string
-  addressApoio?: string
-  addressNumberApoio?: string
-  complementApoio?: string
-  provinceApoio?: string
-  postalCodeApoio?: string
-  cityIdApoio?: number
-  stateApoio?: string
-  cpfCnpjApoio?: string
-  disabledAt?: Date
+  payMethodId?: string | null
+  companyId?: string | null
+  customerApoioId?: string | null
+  customerApoioName?: string | null
+  obs?: string | null
+  stateInscriptionApoio?: string | null
+  emailApoio?: string | null
+  phoneApoio?: string | null
+  addressApoio?: string | null
+  addressNumberApoio?: string | null
+  complementApoio?: string | null
+  provinceApoio?: string | null
+  postalCodeApoio?: string | null
+  cityIdApoio?: number | null
+  stateApoio?: string | null
+  cpfCnpjApoio?: string | null
+  disabledAt?: Date | null
+  installments?: string | null
+  paymentMean?: number | null
+  propertyId?: string | null
+  customerIdApoio?: number | null
+  customerApoioProperty?: string | null
 
-  private constructor({
-    id,
-    numberBudget,
-    createdAt,
-    status,
-    discount,
-    total,
-    deliveryForecast,
-    customerId,
-    shipping,
-    employeeId,
-    auth,
-    payMethodId,
-    companyId,
-    customerApoioId,
-    customerApoioName,
-    obs,
-    stateInscriptionApoio,
-    emailApoio,
-    phoneApoio,
-    addressApoio,
-    addressNumberApoio,
-    complementApoio,
-    provinceApoio,
-    postalCodeApoio,
-    cityIdApoio,
-    stateApoio,
-    cpfCnpjApoio,
-    disabledAt,
-  }: Budget) {
-    return Object.assign(this, {
-      id,
-      numberBudget,
-      createdAt,
-      status,
-      discount,
-      total,
-      deliveryForecast,
-      customerId,
-      shipping,
-      employeeId,
-      auth,
-      payMethodId,
-      companyId,
-      customerApoioId,
-      customerApoioName,
-      obs,
-      stateInscriptionApoio,
-      emailApoio,
-      phoneApoio,
-      addressApoio,
-      addressNumberApoio,
-      complementApoio,
-      provinceApoio,
-      postalCodeApoio,
-      cityIdApoio,
-      stateApoio,
-      cpfCnpjApoio,
-      disabledAt,
-    })
-  }
-
-  static create({
-    id,
-    numberBudget,
-    createdAt,
-    status,
-    discount,
-    total,
-    deliveryForecast,
-    customerId,
-    shipping,
-    employeeId,
-    auth,
-    payMethodId,
-    companyId,
-    customerApoioId,
-    customerApoioName,
-    obs,
-    stateInscriptionApoio,
-    emailApoio,
-    phoneApoio,
-    addressApoio,
-    addressNumberApoio,
-    complementApoio,
-    provinceApoio,
-    postalCodeApoio,
-    cityIdApoio,
-    stateApoio,
-    cpfCnpjApoio,
-    disabledAt,
-  }: Budget) {
-    const budget = new Budget({
-      numberBudget,
-      createdAt,
-      status,
-      discount,
-      total,
-      deliveryForecast,
-      customerId,
-      shipping,
-      employeeId,
-      auth,
-      payMethodId,
-      companyId,
-      customerApoioId,
-      customerApoioName,
-      obs,
-      stateInscriptionApoio,
-      emailApoio,
-      phoneApoio,
-      addressApoio,
-      addressNumberApoio,
-      complementApoio,
-      provinceApoio,
-      postalCodeApoio,
-      cityIdApoio,
-      stateApoio,
-      cpfCnpjApoio,
-      disabledAt,
-      id: id || uuidv4(),
-    })
-
-    return budget
-  }
-
-  static update({
-    id,
-    numberBudget,
-    createdAt,
-    status,
-    discount,
-    total,
-    deliveryForecast,
-    customerId,
-    shipping,
-    employeeId,
-    auth,
-    payMethodId,
-    companyId,
-    customerApoioId,
-    customerApoioName,
-    obs,
-    stateInscriptionApoio,
-    emailApoio,
-    phoneApoio,
-    addressApoio,
-    addressNumberApoio,
-    complementApoio,
-    provinceApoio,
-    postalCodeApoio,
-    cityIdApoio,
-    stateApoio,
-    cpfCnpjApoio,
-    disabledAt,
-  }: Budget) {
-    const budget = new Budget({
-      id,
-      numberBudget,
-      createdAt,
-      status,
-      discount,
-      total,
-      deliveryForecast,
-      customerId,
-      shipping,
-      employeeId,
-      auth,
-      payMethodId,
-      companyId,
-      customerApoioId,
-      customerApoioName,
-      obs,
-      stateInscriptionApoio,
-      emailApoio,
-      phoneApoio,
-      addressApoio,
-      addressNumberApoio,
-      complementApoio,
-      provinceApoio,
-      postalCodeApoio,
-      cityIdApoio,
-      stateApoio,
-      cpfCnpjApoio,
-      disabledAt,
-    })
-
-    return budget
+  constructor(props: Omit<Budget, 'id'>, id?: string) {
+    this.id = id || uuidv4()
+    this.numberBudget = props.numberBudget
+    this.createdAt = props.createdAt
+    this.status = props.status
+    this.discount = new Prisma.Decimal(props.discount || 0)
+    this.total = new Prisma.Decimal(props.total)
+    this.deliveryForecast = props.deliveryForecast
+    this.customerId = props.customerId
+    this.shipping = new Prisma.Decimal(props.shipping || 0)
+    this.employeeId = props.employeeId
+    this.auth = props.auth
+    this.payMethodId = props.payMethodId
+    this.companyId = props.companyId
+    this.customerApoioId = props.customerApoioId
+    this.customerApoioName = props.customerApoioName
+    this.obs = props.obs
+    this.stateInscriptionApoio = props.stateInscriptionApoio
+    this.emailApoio = props.emailApoio
+    this.phoneApoio = props.phoneApoio
+    this.addressApoio = props.addressApoio
+    this.addressNumberApoio = props.addressNumberApoio
+    this.complementApoio = props.complementApoio
+    this.provinceApoio = props.provinceApoio
+    this.postalCodeApoio = props.postalCodeApoio
+    this.cityIdApoio = props.cityIdApoio
+    this.stateApoio = props.stateApoio
+    this.cpfCnpjApoio = props.cpfCnpjApoio
+    this.disabledAt = props.disabledAt
+    this.installments = props.installments
+    this.paymentMean = props.paymentMean
+    this.propertyId = props.propertyId
+    this.customerIdApoio = props.customerIdApoio
+    this.customerApoioProperty = props.customerApoioProperty
   }
 }
 

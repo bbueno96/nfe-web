@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { classNames } from '../../helpers/misc'
 import TreeNode from './TreeNode'
 
-function flattenNodes(nodes, disabled, parent = null) {
+function flattenNodes(nodes, disabled, parent) {
   if (!Array.isArray(nodes) || nodes.length === 0) {
     return []
   }
@@ -76,11 +76,11 @@ function renderTreeNodes(props) {
 }
 
 const Tree = ({ disabled, nodes, onAdd, onEdit, onDisable }) => {
-  const [flatNodes, setFlatNodes] = useState(flattenNodes(nodes, disabled))
+  const [flatNodes, setFlatNodes] = useState(flattenNodes(nodes, disabled, null))
   const treeNodes = renderTreeNodes({ nodes, flatNodes, setFlatNodes, onAdd, onEdit, onDisable })
 
   useEffect(() => {
-    setFlatNodes(flattenNodes(nodes, disabled))
+    setFlatNodes(flattenNodes(nodes, disabled, null))
   }, [nodes, disabled])
 
   return (

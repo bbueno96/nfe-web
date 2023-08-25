@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 class Group {
   id?: string
   description: string
-  companyId: string
+  companyId?: string | null
 
   private constructor({ description, companyId }: Group) {
     return Object.assign(this, {
