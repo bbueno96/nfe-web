@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
@@ -201,7 +202,7 @@ export const AccountPaymentForm = () => {
   const [globalError, setGlobalError] = useState<string | null>(null)
   const { id } = useParams()
   const pushTo = useNavigate()
-  const [accountPayment, setAccountPayment] = useState<AccountPaymentFormValues>(null)
+  const [accountPayment, setAccountPayment] = useState<AccountPaymentFormValues>(null!)
   const [bankAccount, setBanckAccount] = useState([])
   const [provider, setProvider] = useState([])
 
