@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { Link, useParams } from 'react-router-dom'
@@ -54,7 +55,7 @@ interface AccountPayableFormValues {
   discount?: number
   addition?: number
   numberInstallment?: number
-  installments?: number
+  installments: number
   subAccounts: SubAccounts[]
   providerName?: string
   global?: string
@@ -253,7 +254,7 @@ export const AccountPayableForm = () => {
   const [globalError, setGlobalError] = useState<string | null>(null)
   const { id } = useParams()
   const pushTo = useNavigate()
-  const [accountPayable, setAccountPayable] = useState<AccountPayableFormValues>(null)
+  const [accountPayable, setAccountPayable] = useState<AccountPayableFormValues>(null!)
   const [classifications, setClassifications] = useState([])
   const [providers, setProviders] = useState([])
   const form = useFormik<AccountPayableFormValues>({
@@ -339,7 +340,7 @@ export const AccountPayableForm = () => {
           .map((_, i) => ({
             numberInstallment: i + 1,
             dueDate: new Date(addMonths(entity.dueDate, i)),
-            value: entity.value / entity.installments,
+            value: entity.value / entity.installments || 1,
           })),
       )
     }
@@ -422,7 +423,7 @@ export const AccountPayableForm = () => {
                     autoComplete="document"
                     placeholder="Documento"
                     customClassName="form-control"
-                    value={entity.document}
+                    value={entity.document || ''}
                   />
                 </Field>
               </div>
